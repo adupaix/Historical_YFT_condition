@@ -66,7 +66,7 @@ source(file.path(FUNC_PATH, "install_libraries.R"))
 
 srcUsedPackages <- c("plyr", "dplyr","tidyr","foreach","doSNOW","stringr","lubridate","sf",
                      "parallel","ggplot2","tibble","cowplot","RColorBrewer", "MASS","truncnorm",
-                     "ape")
+                     "ape", "mgcv", "spdep")
 
 installAndLoad_packages(srcUsedPackages, loadPackages = TRUE)
 
@@ -91,8 +91,8 @@ if (nb_of_times_to_run != 1){
 }
 
 
-glm_summaries <- data.frame(matrix(ncol = 3*9+3, nrow = length(seeds), data = NA))
-names(glm_summaries) <- c("seed", "percent.moran.Kn.not.signif",
+glm_summaries <- data.frame(matrix(ncol = 3*9+4, nrow = length(seeds), data = NA))
+names(glm_summaries) <- c("seed", "moran.mc.Kn.p.value", "moran.test.Kn.p.value",
                           paste(rep(c("(Intercept)","fishing_quarter2","fishing_quarter3",
                                       "fishing_quarter4", "fishing_year", "scaled_FL",
                                       "scaled_lon","scaled_lat", "scaled_lon:scaled_lat"), each = 3),
@@ -310,7 +310,7 @@ for (i in 1:length(seeds)){
   
   
   #' ********************
-  #' Get area of fishing:
+  #' Get fishing location:
   #' ********************
   
   msg <- "\n~~~~ Getting fishing location ~~~~\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
@@ -484,53 +484,92 @@ for (i in 1:length(seeds)){
   #' Because we have too much entries in the data.frame (~26,000, hence a distance matrix of 26,000^2)
   #' we test for spatial autocorrelation on a sub-sample, and repeat the operation 1000 times
   
-  msg <- "\n\n~~~~ Performing Moran's I tests on sub-samples ~~~~" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+  msg <- "\n\n~~~~ Performing Moran's I test on Kn ~~~~" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
   
-  sample_size = 5000
-  niter = 100
-  moran_p_values <- vector(length = niter)
+  c <- seq(50, 450, 100)
+  mc <- list() ; test <- list() ; nb_list <- list() ; listw <- list()
   
-  pb <- txtProgressBar(min = 0, max = niter, style = 3)
-  
-  for (k in 1:niter){
+  for (k in 1:length(c)){
+    cat(lines.to.cat)
+    cat(paste("\n  - Consider Neighboors if d <=", c[k], "km"))
+    cat("\n      - Getting nearest neighboors")
+    nb_list[[k]] <- spdep::dnearneigh(x = st_coordinates(data),
+                                 d1 = 0,
+                                 d2 = c[k],
+                                 longlat = T)
     
-    to_sample <- sample.int(dim(data)[1], sample_size)
+    msg <- "\n      - Getting weight list from nearest neighboors" ; cat(msg)
+    listw[[k]] <- nb2listw(nb_list[[k]], zero.policy = T)
     
-    lon_line <- matrix(data = data$lon[to_sample],
-                       nrow = sample_size,
-                       ncol = sample_size,
-                       byrow = T)
-    
-    lon_col <- matrix(data = data$lon[to_sample],
-                      nrow = sample_size,
-                      ncol = sample_size,
-                      byrow = F)
-    
-    lat_line <- matrix(data = data$lat[to_sample],
-                       nrow = sample_size,
-                       ncol = sample_size,
-                       byrow = T)
-    
-    lat_col <- matrix(data = data$lat[to_sample],
-                      nrow = sample_size,
-                      ncol = sample_size,
-                      byrow = F)
-    
-    dist_mat <- sqrt((lon_line - lon_col) ^ 2 + (lat_line -lat_col) ^ 2)
-    
-    dist_mat_inv <- 1/dist_mat
-    dist_mat_inv[which(is.infinite(dist_mat_inv))] <- 0
-    
-    moran_p_values[k] <- ape::Moran.I(data$Kn[to_sample], dist_mat_inv)$p.value
-    
-    setTxtProgressBar(pb, k)
+    msg <- "\n      - Performing Moran's I tests" ; cat(msg)
+    mc[[k]] <- moran.mc(data$Kn, listw = listw[[k]], nsim = 99, zero.policy = T)
+    test[[k]] <- moran.test(data$Kn, listw = listw[[k]], zero.policy = T)
   }
   
-  close(pb)
+  morans.mc <- unlist(lapply(mc, function(x) x$statistic))
+  morans.test <- unlist(lapply(test, function(x) x$statistic))
   
-  glm_summaries[i,2] <- length(which(moran_p_values > .05)) / length(moran_p_values)
+  toplot <- data.frame(d = rep(c, 2),
+                       I = c(morans.mc, morans.test),
+                       moran_type = c(rep("mc",length(c)),
+                                      rep("test",length(c))))
   
-  rm(dist_mat, dist_mat_inv) ; invisible(gc())
+  p_moran <- ggplot(data = toplot, aes(x=d, y=I, group = moran_type)) + 
+    geom_point()+ geom_line()+
+    scale_color_discrete("Moran's\nfunction")+
+    xlab("Distance (km)")+
+    ylab("Moran's I")
+  
+  # glm_summaries[i,2] <- mc$p.value
+  # glm_summaries[i,3] <- test$p.value
+  
+  rm(mc, test, nb_list, listw) ; invisible(gc())
+  
+  # sample_size = 5000
+  # niter = 100
+  # moran_p_values <- vector(length = niter)
+  # 
+  # pb <- txtProgressBar(min = 0, max = niter, style = 3)
+  # 
+  # for (k in 1:niter){
+  #   
+  #   to_sample <- sample.int(dim(data)[1], sample_size)
+  #   
+  #   lon_line <- matrix(data = data$lon[to_sample],
+  #                      nrow = sample_size,
+  #                      ncol = sample_size,
+  #                      byrow = T)
+  #   
+  #   lon_col <- matrix(data = data$lon[to_sample],
+  #                     nrow = sample_size,
+  #                     ncol = sample_size,
+  #                     byrow = F)
+  #   
+  #   lat_line <- matrix(data = data$lat[to_sample],
+  #                      nrow = sample_size,
+  #                      ncol = sample_size,
+  #                      byrow = T)
+  #   
+  #   lat_col <- matrix(data = data$lat[to_sample],
+  #                     nrow = sample_size,
+  #                     ncol = sample_size,
+  #                     byrow = F)
+  #   
+  #   dist_mat <- sqrt((lon_line - lon_col) ^ 2 + (lat_line -lat_col) ^ 2)
+  #   
+  #   dist_mat_inv <- 1/dist_mat
+  #   dist_mat_inv[which(is.infinite(dist_mat_inv))] <- 0
+  #   
+  #   moran_p_values[k] <- ape::Moran.I(data$Kn[to_sample], dist_mat_inv)$p.value
+  #   
+  #   setTxtProgressBar(pb, k)
+  # }
+  # 
+  # close(pb)
+  # 
+  # glm_summaries[i,2] <- length(which(moran_p_values > .05)) / length(moran_p_values)
+  # 
+  # rm(dist_mat, dist_mat_inv) ; invisible(gc())
   
   # sink(glmSummary)
   # 
@@ -602,6 +641,8 @@ for (i in 1:length(seeds)){
   #' @6. Build the model
   glm_Kn <- glm(Kn ~ fishing_quarter + fishing_year + scaled_FL + scaled_lon + scaled_lat + scaled_lon*scaled_lat,
                 data = data, family = gaussian)
+  
+  gam_Kn <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + scaled_FL + te(scaled_lon + scaled_lat))
   
   png(diagnoPlotName, width = 1080, height = 1080, units = "px")
   par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
@@ -684,6 +725,37 @@ for (i in 1:length(seeds)){
   #' @7. Test spatial autocorrelation on the residuals
   cat(lines.to.cat)
   msg <- "\n\n~~~~ Performing Moran's I tests on model residuals ~~~~" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+  
+  c <- seq(50, 450, 100)
+  mc <- list() ; test <- list()
+  
+  for (k in 1:length(c)){
+    cat(lines.to.cat)
+    cat(paste("\n  - Consider Neighboors if d <=", c[k], "km"))
+
+    msg <- "\n      - Performing Moran's I tests" ; cat(msg)
+    mc[[k]] <- moran.mc(glm_Kn$residuals, listw = listw[[k]], nsim = 99, zero.policy = T)
+    test[[k]] <- moran.test(glm_Kn$residuals, listw = listw[[k]], zero.policy = T)
+  }
+  
+  morans.mc <- unlist(lapply(mc, function(x) x$statistic))
+  morans.test <- unlist(lapply(test, function(x) x$statistic))
+  
+  toplot <- data.frame(d = rep(c, 2),
+                       I = c(morans.mc, morans.test),
+                       moran_type = c(rep("mc",length(c)),
+                                      rep("test",length(c))))
+  
+  p_moran_residuals <- ggplot(data = toplot, aes(x=d, y=I, group = moran_type)) + 
+    geom_point()+ geom_line()+
+    scale_color_discrete("Moran's\nfunction")+
+    xlab("Distance (km)")+
+    ylab("Moran's I")
+  
+  glm_summaries[i,2] <- mc$p.value
+  glm_summaries[i,3] <- test$p.value
+  
+  rm(mc, test, nb_list, listw) ; invisible(gc())
   
   sample_size = 5000
   niter = 100
