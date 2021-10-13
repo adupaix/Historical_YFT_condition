@@ -1,9 +1,10 @@
 #'#*******************************************************************************************************************
 #'@author : Amael DUPAIX
 #'@update : 2021-09-27
-#'@email : 
+#'@email : amael.dupaix@ens-lyon.fr
 #'#*******************************************************************************************************************
-#'@description :  
+#'@description :  Main script to determine if the YFT condition factor (Kn) has been impacted by the introduction of
+#' FADs in the Indian Ocean.
 #'#*******************************************************************************************************************
 #'@revisions
 #'#*******************************************************************************************************************
@@ -56,6 +57,7 @@ allom = "Chassot2015"
 
 #' @Figure_1
 #' size classes for filtering data
+#' Used to generate Figure 1
 size_classes = c("40-60","<102",">102")
 
 
@@ -119,6 +121,7 @@ for (i in 1:length(seeds)){
   fitName <- file.path(PLOT_PATH, "fit_lnorm_dates_goodnessoffit.png")
   histFitName <- file.path(PLOT_PATH, "fit_lnorm_dates.png")
   fig1Name <- file.path(PLOT_PATH, "Figure1.png")
+  fig2Name <- file.path(PLOT_PATH, "Figure2.png")
   
   vars <- c("month", "quarter", "lonlat", "lon", "lat")
   plotsNames <- file.path(PLOT_PATH, paste0("Kn_f-", vars, ".png"))
@@ -383,6 +386,8 @@ for (i in 1:length(seeds)){
   #' ***************
   #' Generate Fig1:
   #' ***************
+  #' Evolution of the condition factor (Kn)
+  #' of different size classes according to time
   
   msg <- "\n~~~~ Generating Figure 1 ~~~~\n\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
   
@@ -445,11 +450,112 @@ for (i in 1:length(seeds)){
   
   ggsave(fig1Name, fig1)
   
+  # rm(data_by_class) ; invisible(gc())
   
   #' ***************
   #' Generate Fig2:
   #' ***************
+  #' Comparison of the condition factor (Kn) between
+  #' FSC and FAD associated schools
   
+  figure2 <- function(data, var.to.compare, var.grp, levels.var.grp, var.x,
+                      scale.color.title = "School\n type",
+                      xlabel = "Year",
+                      line = 0
+                      ){
+    
+    data %>% dplyr::filter((!!rlang::sym(var.grp)) %in% levels.var.grp) %>%
+      plyr::ddply(.variables = c(var.x,var.grp), summarise, n=n()) %>%
+      spread((!!rlang::sym(var.grp)), n) %>%
+      filter(!is.na((!!rlang::sym(levels.var.grp[1]))) & !is.na((!!rlang::sym(levels.var.grp[2])))) -> spl_sizes
+    
+    var.x_of_int <- spl_sizes[,var.x]
+    
+    data %>% 
+      filter((!!rlang::sym(var.x)) %in% var.x_of_int & (!!rlang::sym(var.grp)) %in% levels.var.grp) -> dat_
+    
+    dat_ %>% ddply(.variables = c(var.x,var.grp), summarise, m = mean(!!rlang::sym(var.to.compare)),
+                   sd = sd(!!rlang::sym(var.to.compare)), n = n()) %>%
+      mutate(se = sd / sqrt(n)) -> toplot
+    
+    p <- c()
+    
+    for (i in 1:length(var.x_of_int)){
+      
+      data %>% dplyr::filter(!!rlang::sym(var.x) == var.x_of_int[i] &
+                              !!rlang::sym(var.grp) == levels.var.grp[1]) -> dat_.1
+      data %>% dplyr::filter(!!rlang::sym(var.x) == var.x_of_int[i] &
+                              !!rlang::sym(var.grp) == levels.var.grp[2]) -> dat_.2
+      
+      p <- c(p, wilcox.test(dat_.1[[var.to.compare]],dat_.2[[var.to.compare]])$p.value)
+      # summary_tests$Significant_diff[i] <- F
+      # if (wilcox.test(yft.i$whole_fish_weight, yft.i$weight_th)$p.value <= 0.05/ntests){
+      #   summary_tests$Significant_diff[i] <- T
+      # }
+      # 
+      # summary_tests$Mean_residual[i] <- mean(yft.i$weight_residuals)
+      # 
+      
+    }
+    
+    df <- data.frame(cbind(var.x_of_int, p))
+    ntests <- dim(df)[1]
+    
+    signif_y <- df$var.x_of_int[which(df$p <= 0.05/ntests)]
+    
+    toplot %>% dplyr::filter(!!rlang::sym(var.x) %in% signif_y) -> signi
+    
+    axis_col <- ifelse(unique(toplot[[var.x]]) %in% signi[[var.x]],"red","black") 
+    axis_face <- ifelse(unique(toplot[[var.x]]) %in% signi[[var.x]],"bold","plain")
+    
+    p3.1 <- ggplot(toplot, aes(x = as.factor(!!rlang::sym(var.x)), y = m, color = !!rlang::sym(var.grp)))+
+      scale_color_brewer(scale.color.title, palette = "Set1")+
+      geom_point()+
+      geom_errorbar(aes(ymin = m - se, ymax = m + se), width = 0.25, size = 0.5)+
+      theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+            axis.ticks.x = element_blank(),
+            panel.border = element_rect(color = "black", fill = NA),
+            legend.justification = c(1,0),
+            legend.position = c(0.9,0.1),
+            legend.background = element_rect(colour = "black"))+
+      ylab(paste("Mean", var.to.compare))
+    
+    toplot %>% ddply(.variables = var.x, .fun = function(x){
+      (x %>% filter(!!rlang::sym(var.grp) == levels.var.grp[1]))$m -
+        (x %>% filter(!!rlang::sym(var.grp) == levels.var.grp[2]))$m
+    }) -> data_hist
+    
+    p3.2 <- ggplot(data_hist, aes(x = as.factor(!!rlang::sym(var.x)), y = V1))+
+      geom_bar(stat = "identity")+
+      theme(axis.text.x = element_text(angle = 90, colour = axis_col, face = axis_face),
+            panel.border = element_rect(color = "black", fill = NA))+
+      ylab(paste0(var.to.compare," (",levels.var.grp[1],") - ", var.to.compare," (",levels.var.grp[2],")"))+
+      xlab(xlabel)
+    
+    if(line != 0){
+      p3.1 <- p3.1 + geom_vline(aes(xintercept = line))
+      p3.2 <- p3.2 + geom_vline(aes(xintercept = line))
+    }
+    
+    p3 <- ggdraw()+
+      draw_plot(p3.1, 0, 1/3, 1, 2/3)+
+      draw_plot(p3.2, 0, 0, 1, 1/3)+
+      draw_plot_label(c("A","B"), c(0,0), c(1,1/3))
+    
+    return(p3)
+    
+  }
+  
+  p3 <- figure2(data = data,
+                var.to.compare = "Kn",
+                var.grp = "fishing_mode",
+                levels.var.grp = c("DFAD","FSC"),
+                var.x = "fishing_year",
+                scale.color.title = "School\n type",
+                xlabel = "Year",
+                line = 1.5)
+  
+  ggsave(fig2Name, p3, width = 7, height = 10)
   
   
   #' ***************
