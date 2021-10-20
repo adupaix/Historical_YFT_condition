@@ -21,9 +21,10 @@ OUTPUT_PATH <- file.path(WD, "3.Outputs", format(Sys.time()))
 
 PLOT_PATH <- file.path(OUTPUT_PATH, "Plots")
 
+arguments <- list(
 #' @reproductibility
-nb_of_times_to_run <- 1
-SEED <- 123456
+nb_of_times_to_run = 5,
+SEED = 123456,
 
 #'@arguments:
 #'#**********
@@ -33,36 +34,44 @@ SEED <- 123456
 #'    If F, runs in sequential
 #'    if T, runs in parallel
 #' Second element of the vector: fraction of the cores to be used
-Parallel = c(T, 1/2)
+Parallel = c(T, 1/2),
 
 #' If RESET is FALSE, try to read the prepped data
 #' else, prep the data in any case
-RESET = F
+RESET = F,
 
 #' When missing, choose to sample fork length (FL) from fish with the same first dorsal length (FDL)
 #'  or not
-calcfdl = F
+calcfdl = F,
 
 #' Read the geometry column or not
 #' need to read from the chr column and change it in geometry format
-getgeom = T
+getgeom = T,
 
 #' Choose the species of interest
 #' one of YFT, BET, or SKJ
-species = "YFT"
+species = "YFT",
 
 #' Choose which allometric relationship is going to be used to calculate the condition factor
 #' one of "Chassot2015" of "fromData"
-allom = "Chassot2015"
+allom = "Chassot2015",
 
 #' @Figure_1
 #' size classes for filtering data
 #' Used to generate Figure 1
-size_classes = c("40-60","<102",">102")
+size_classes = c("40-60","<102",">102"),
 
-size_class_for_model <- "all"
+size_class_for_model = "all",
 
-fad_fsc <- T
+fad_fsc = T,
+
+deduce_date = T,
+
+year_by_groups = F
+
+)
+
+list2env(arguments, .GlobalEnv)
 
 #' ***************
 #' Get libraries:
@@ -108,9 +117,6 @@ if (nb_of_times_to_run != 1){
 # Initialize names
 try(dir.create(PLOT_PATH, showWarnings = F, recursive = T))
 
-#Initialize data processing summary name
-summaryName <- file.path(OUTPUT_PATH, paste0("Data_processing_summary_RESET-",RESET,".txt"))
-
 fitName <- file.path(PLOT_PATH, "fit_lnorm_dates_goodnessoffit.png")
 histFitName <- file.path(PLOT_PATH, "fit_lnorm_dates.png")
 fig1Name <- file.path(PLOT_PATH, "Figure1.png")
@@ -118,6 +124,13 @@ fig2Name <- file.path(PLOT_PATH, "Figure2.png")
 
 vars <- c("month", "quarter", "lonlat", "lon", "lat")
 plotsNames <- file.path(PLOT_PATH, paste0("Kn_f-", vars, ".png"))
+
+readName <- file.path(OUTPUT_PATH, "README.txt")
+
+sink(readName)
+cat("Arguments used\n\n")
+cat(paste(paste(names(format(arguments)), format(arguments), sep = ": "), collapse = "\n"))
+sink()
 
 
 for (i in 1:length(seeds)){
@@ -130,10 +143,14 @@ for (i in 1:length(seeds)){
   msg <- paste("-------- ITERATION", i, "/", length(seeds), " - SEED NB =", seeds[i], "--------") ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
   
   # Initialize names
-  diagnoPlotName <- file.path(PLOT_PATH, paste0("diagn_glm_", seeds[i], ".png"))
-  moranPlotName <- file.path(PLOT_PATH, paste0("Moran_I_plot_",seeds[i],".png"))
-  gamSummary <- file.path(OUTPUT_PATH, paste0("gam_summary_",seeds[i],".rds"))
-  glmSummary <- file.path(OUTPUT_PATH, paste0("glm_summary_",seeds[i],".rds"))
+  try(dir.create(file.path(OUTPUT_PATH, seeds[i]), showWarnings = F, recursive = T))
+  diagnoPlotName <- file.path(OUTPUT_PATH, seeds[i], "diagn_gam.png")
+  moranPlotName <- file.path(OUTPUT_PATH, seeds[i], "Moran_I_plot.png")
+  gamteSummary <- file.path(OUTPUT_PATH, seeds[i], "gam_te.rds")
+  gamsSummary <- file.path(OUTPUT_PATH, seeds[i], "gam_s.rds")
+  summaryName <- file.path(OUTPUT_PATH, seeds[i], "Processing_summary.txt")
+  smoothPlotName <- file.path(OUTPUT_PATH, seeds[i], "Smooth_latlon.png")
+  smoothPlotName2 <- file.path(OUTPUT_PATH, seeds[i], "Smooth_latlon_withpoints.png")
   
   # Initialize data processing summary
   sink(summaryName)
@@ -247,7 +264,6 @@ for (i in 1:length(seeds)){
   
   msg <- paste0("    - Number of removed entries (date errors): ", dim(error_interval)[1]+dim(error_exact)[1], "\n") ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
   
-  
   # For data with a date interval, take the middle of the interval
   data_interval_dates %>%
     mutate(date1 = fishing_date_min,
@@ -261,38 +277,50 @@ for (i in 1:length(seeds)){
     arrange(fish_identifier) %>%
     mutate(t_fishing_sampling = as.numeric(difftime(fish_sampling_date, fishing_date, units = "days")))-> data_dates
   
-  # fit a log normal law to the time between fishing and sampling
-  fit_lnorm = fitdistrplus::fitdist(data_dates$t_fishing_sampling, "lnorm")
+  if (deduce_date){
+    # fit a log normal law to the time between fishing and sampling
+    fit_lnorm = fitdistrplus::fitdist(data_dates$t_fishing_sampling, "lnorm")
+    
+    # plot informations on the fit and save the plots
+    png(fitName)
+    plot(fit_lnorm)
+    dev.off()
+    
+    fit_plot <- ggplot()+
+      geom_histogram(data = data_dates,
+                     aes(x=t_fishing_sampling,
+                         y=..density..),
+                     color = NA,
+                     fill = "red",
+                     alpha = 0.5,
+                     binwidth = 1)+
+      stat_function(fun = dlnorm, args = fit_lnorm$estimate, color = "red")+
+      xlab("Time between fishing and sampling (days)")+
+      ylab("Fraction of entries in the dataset")
+    
+    ggsave(histFitName, fit_plot)
+    
+    # for data with missing fishing dates, deduce a fishing date using the above fit
+    data_no_dates %>%
+      mutate(t_fishing_sampling = rlnorm(dim(data_no_dates)[1],
+                                         meanlog = fit_lnorm$estimate[1],
+                                         sdlog = fit_lnorm$estimate[2])) %>%
+      mutate(fishing_date = fish_sampling_date - as.difftime(t_fishing_sampling, units = "days")) -> data_no_dates
+    
+    
+    #bind data with dates and data with randomly assigned dates
+    bind_rows(data_dates, data_no_dates) -> data
+    
+    msg <- paste0("    - Number of deduced entries (missing date): ", dim(data_no_dates)[1], "\n") ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+    
+  } else {
+    
+    msg <- paste0("    - Number of removed entries (missing date): ", dim(data_no_dates)[1], "\n") ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+    
+    data <- data_dates
+  }
   
-  # plot informations on the fit and save the plots
-  png(fitName)
-  plot(fit_lnorm)
-  dev.off()
-  
-  fit_plot <- ggplot()+
-    geom_histogram(data = data_dates,
-                   aes(x=t_fishing_sampling,
-                       y=..density..),
-                   color = NA,
-                   fill = "red",
-                   alpha = 0.5,
-                   binwidth = 1)+
-    stat_function(fun = dlnorm, args = fit_lnorm$estimate, color = "red")+
-    xlab("Time between fishing and sampling (days)")+
-    ylab("Fraction of entries in the dataset")
-  
-  ggsave(histFitName, fit_plot)
-  
-  # for data with missing fishing dates, deduce a fishing date using the above fit
-  data_no_dates %>%
-    mutate(t_fishing_sampling = rlnorm(dim(data_no_dates)[1],
-                                       meanlog = fit_lnorm$estimate[1],
-                                       sdlog = fit_lnorm$estimate[2])) %>%
-    mutate(fishing_date = fish_sampling_date - as.difftime(t_fishing_sampling, units = "days")) -> data_no_dates
-  
-  
-  #bind data with dates and data with randomly assigned dates
-  bind_rows(data_dates, data_no_dates) %>%
+  data %>%
     mutate(fishing_year = year(fishing_date),
            fishing_month = month(fishing_date),
            fishing_quarter = quarter(fishing_date, fiscal_start = 12)) -> data
@@ -310,7 +338,11 @@ for (i in 1:length(seeds)){
   cat("\n     Of which",dim(error_exact)[1],"contain an error (removed)")
   cat("\n  Number of entries with fishing date interval:", N2)
   cat("\n     Of which",dim(error_interval)[1],"contain an error (removed)")
-  cat("\n  Number of entries with no fishing date available (deduced using the lnorm fit):", dim(data_no_dates)[1])
+  if (deduce_date){
+    cat("\n  Number of entries with no fishing date available (deduced using the lnorm fit):", dim(data_no_dates)[1])
+  } else {
+    cat("\n  Number of entries with no fishing date available (removed):", dim(data_no_dates)[1])
+  }
   cat("\n  Number of entries after 2019 (removed):", N3 - dim(data)[1])
   cat("\n\n    - Number of entries after date filter:",dim(data)[1])
   sink()
@@ -328,9 +360,6 @@ for (i in 1:length(seeds)){
   
   data %>% filter(geom_type != "MULTIPOINT") %>%
     mutate(geom_sampled = F) -> data_na_point
-  
-  # marche pas, rempli la RAM
-  ## FAIRE TOURNER PAR MORCEAUX
   
   data %>% filter(geom_type == "MULTIPOINT") %>%
     mutate(geom_sampled = T) -> data_multi
@@ -512,10 +541,20 @@ for (i in 1:length(seeds)){
   #' saveRDS(data, file = "/home/adupaix/Documents/These/Axe_3/Historical_YFT_condition/3.Outputs/data_for_spatial_autocorr.rds")
   #'      (dataset of 40-60cm, used for the model on 21.10.14)
   #'      
-  saveRDS(data, file = "/home/adupaix/Documents/These/Axe_3/Historical_YFT_condition/3.Outputs/data_for_model.rds")
+  # saveRDS(data, file = "/home/adupaix/Documents/These/Axe_3/Historical_YFT_condition/3.Outputs/data_for_model.rds")
   #'      (dataset of all sizes, used for the model on 21.10.14) seed = 123456
   
   #' @1. Scale quantitative variables + scale and center geographical variables
+  
+  if (year_by_groups){
+    ref <- (min(data$fishing_year)-5):(max(data$fishing_year)+5)
+    ref <- ref[which(ref %% 5 == 0)]
+    
+    f <- function(x, ref) ref[max(which(ref<=x))]
+    
+    data$fishing_year <- mapply(f, data$fishing_year, MoreArgs = list(ref = ref))
+  }
+  
   data %>% mutate(scaled_FL = scale(fork_length, scale = T, center = F),
                   scaled_lon = scale(lon, scale = T, center = T),
                   scaled_lat = scale(lat, scale = T, center = T),
@@ -607,7 +646,7 @@ for (i in 1:length(seeds)){
   
   ggplot() +
     geom_point(data=data %>% plyr::ddply(.variables = "fishing_month", summarise, Kn = mean(Kn)),
-               aes(x=fishing_month, y = Kn))+
+               aes(x=as.factor(fishing_month), y = Kn))+
     ylab("Mean Kn")+xlab("Fishing month")
   
   
@@ -638,29 +677,31 @@ for (i in 1:length(seeds)){
   #' @6. Build the model
   if (size_class_for_model == "all"){
     if (fad_fsc == F){
-    gam_Kn <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + te(scaled_lon, scaled_lat),
+    gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + te(scaled_lon, scaled_lat),
                         data = data)
-    glm_Kn <- glm(Kn ~ fishing_quarter + fishing_year + size_class + scaled_lon + scaled_lat + scaled_lon*scaled_lat,
-                  data = data)
+    
+    gam2 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + s(scaled_lon, scaled_lat),
+                      data = data)
+    
     } else {
-      gam_Kn <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + fishing_mode + te(scaled_lon, scaled_lat),
+      gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + fishing_mode + te(scaled_lon, scaled_lat),
                           data = data)
-      glm_Kn <- glm(Kn ~ fishing_quarter + fishing_year + size_class + fishing_mode + scaled_lon + scaled_lat + scaled_lon*scaled_lat,
+      gam2 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + fishing_mode + s(scaled_lon, scaled_lat, k = 5),
                     data = data)
     }
   } else {
-    gam_Kn <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + te(scaled_lon, scaled_lat),
+    gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + te(scaled_lon, scaled_lat),
                         data = data)
-    glm_Kn <- glm(Kn ~ fishing_quarter + fishing_year + scaled_lon + scaled_lat + scaled_lon*scaled_lat,
+    gam2 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + s(scaled_lon, scaled_lat),
                   data = data)
   }
   
   png(diagnoPlotName, width = 1080, height = 1080, units = "px")
-  gratia::appraise(gam_Kn)
+  gratia::appraise(gam1)
   dev.off()
   
-  saveRDS(gam_Kn, gamSummary)
-  saveRDS(glm_Kn, glmSummary)
+  saveRDS(gam1, gamteSummary)
+  saveRDS(gam2, gamsSummary)
   
   # for (k in 2:(dim(glm_summaries)[2])){
   #   glm_summaries[i,k] <- summ[sub("__.*", "", names(glm_summaries)[k]),sub(".*__", "", names(glm_summaries)[k])]
@@ -671,7 +712,7 @@ for (i in 1:length(seeds)){
   msg <- "\n\n~~~~ Performing Moran's I tests on model residuals ~~~~" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
   
   c <- seq(1,10,1)
-  mc_glm <- list() ; test_glm <- list() ; mc_gam <- list() ; test_gam <- list()
+  mc_gam1 <- list() ; test_gam1 <- list() ; mc_gam2 <- list() ; test_gam2 <- list()
   
   for (k in 1:length(c)){
     cat(lines.to.cat)
@@ -686,24 +727,24 @@ for (i in 1:length(seeds)){
     # listw[[k]] <- nb2listw(nb_list, zero.policy = T)
 
     msg <- "\n      - Performing Moran's I tests" ; cat(msg)
-    mc_glm[[k]] <- moran.mc(resid(glm_Kn)[to_sample], listw = listw[[k]], nsim = 99, zero.policy = T)
-    test_glm[[k]] <- moran.test(resid(glm_Kn)[to_sample], listw = listw[[k]], zero.policy = T) 
-    mc_gam[[k]] <- moran.mc(resid(gam_Kn)[to_sample], listw = listw[[k]], nsim = 99, zero.policy = T)
-    test_gam[[k]] <- moran.test(resid(gam_Kn)[to_sample], listw = listw[[k]], zero.policy = T) 
+    mc_gam1[[k]] <- moran.mc(resid(gam1)[to_sample], listw = listw[[k]], nsim = 99, zero.policy = T)
+    test_gam1[[k]] <- moran.test(resid(gam1)[to_sample], listw = listw[[k]], zero.policy = T) 
+    mc_gam2[[k]] <- moran.mc(resid(gam2)[to_sample], listw = listw[[k]], nsim = 99, zero.policy = T)
+    test_gam2[[k]] <- moran.test(resid(gam2)[to_sample], listw = listw[[k]], zero.policy = T) 
     
   }
   
-  morans.mc.res <- unlist(lapply(mc_glm, function(x) x$statistic))
-  morans.test.res <- unlist(lapply(test_glm, function(x) x$estimate[1]))
-  morans.mc.res.gam <- unlist(lapply(mc_gam, function(x) x$statistic))
-  morans.test.res.gam <- unlist(lapply(test_gam, function(x) x$estimate[1]))
+  morans.mc.res.gam1 <- unlist(lapply(mc_gam1, function(x) x$statistic))
+  morans.test.res.gam1 <- unlist(lapply(test_gam1, function(x) x$estimate[1]))
+  morans.mc.res.gam2 <- unlist(lapply(mc_gam2, function(x) x$statistic))
+  morans.test.res.gam2 <- unlist(lapply(test_gam2, function(x) x$estimate[1]))
   
   toplot2 <- data.frame(d = rep(c, 4),
-                       I = c(morans.mc.res, morans.test.res, morans.mc.res.gam, morans.test.res.gam),
-                       moran_type = c(rep("mc_res_glm",length(c)),
-                                      rep("test_res_glm",length(c)),
-                                      rep("mc_res_gam",length(c)),
-                                      rep("test_res_gam",length(c))))
+                       I = c(morans.mc.res.gam1, morans.test.res.gam1, morans.mc.res.gam2, morans.test.res.gam2),
+                       moran_type = c(rep("mc_res_gam1",length(c)),
+                                      rep("test_res_gam1",length(c)),
+                                      rep("mc_res_gam2",length(c)),
+                                      rep("test_res_gam2",length(c))))
   
   bind_rows(toplot, toplot2) -> toplot
   
@@ -716,8 +757,8 @@ for (i in 1:length(seeds)){
   
   toplot <- toplot[grep("test", toplot$moran_type),]
   toplot$moran_type <- gsub(pattern = "test$", "Kn", toplot$moran_type)
-  toplot$moran_type <- gsub(pattern = "test_res_glm", "GLM residuals", toplot$moran_type)
-  toplot$moran_type <- gsub(pattern = "test_res_gam", "GAM residuals", toplot$moran_type)
+  toplot$moran_type <- gsub(pattern = "test_res_gam1", "GAM1 residuals", toplot$moran_type)
+  toplot$moran_type <- gsub(pattern = "test_res_gam2", "GAM2 residuals", toplot$moran_type)
   
   p_moran_residuals2 <- ggplot(data = toplot, aes(x=d*100, y=I, group = moran_type, color = moran_type)) + 
     geom_point()+ geom_line()+
@@ -730,4 +771,75 @@ for (i in 1:length(seeds)){
   rm(mc, test, nb_list, listw) ; invisible(gc())
   
   
+  #' @test
+  #' plot smooth term of gam (lon and lat)
+  
+  
+  ct_int_pred <- expand_grid(
+    scaled_lon = seq(from=min(data$scaled_lon), 
+                     to=max(data$scaled_lon), 
+                     length.out = 100),
+    scaled_lat = seq(from=min(data$scaled_lat), 
+                     to=max(data$scaled_lat), 
+                     length.out = 100),
+    fishing_quarter = "1",
+    fishing_year = "1990",
+    size_class = "<60"
+  )
+  
+  if (fad_fsc){
+    ct_int_pred$fishing_mode <- "DFAD"
+  }
+  
+  sc_lon <- attr(data$scaled_lon, "scaled:scale")
+  ce_lon <- attr(data$scaled_lon, "scaled:center")
+  sc_lat <- attr(data$scaled_lat, "scaled:scale")
+  ce_lat <- attr(data$scaled_lat, "scaled:center")
+  
+  ct_int_pred <- predict(gam1, newdata = ct_int_pred, 
+                         se.fit = TRUE) %>%  
+    as_tibble() %>% 
+    cbind(ct_int_pred) %>%
+    mutate(lon = scaled_lon * sc_lon + ce_lon,
+           lat = scaled_lat * sc_lat + ce_lat)
+  
+  dim(ct_int_pred)
+  
+  countries <- map_data("world")
+  # countries$long <- scale(countries$long, center = T, scale = T)
+  # countries$lat <- scale(countries$lat, center = T, scale = T)
+  
+  xlm <- c(min(data$lon), max(data$lon))
+  ylm <- c(min(data$lat), max(data$lat))
+  
+  predict_latlon <- ggplot(ct_int_pred, aes(x=lon, y=lat)) + 
+    coord_sf(xlim = xlm, ylim = ylm, expand = FALSE, crs = st_crs(4326))
+  
+  predict_latlon2 <- predict_latlon +
+    geom_point(data=data, aes(x=lon, y=lat), size = 0.01, color = "black")
+  
+  predict_latlon <- predict_latlon +
+    geom_tile(aes(fill = fit), alpha = 0.8) +
+    scale_fill_gradientn("Predicted\nKn", limits = c(0.9,1.1), colors = c("blue","grey","red"))+
+    geom_contour(aes(z = fit), binwidth = 0.025, colour = "grey40")+
+    theme(panel.background = element_blank(),
+          panel.border = element_rect(fill=NA))+
+    geom_polygon(data=countries, aes(x=long, y=lat, group = group))+
+    xlab("Longitude")+ylab("Latitude")
+  
+  predict_latlon2 <- predict_latlon2 +
+    geom_tile(aes(fill = fit), alpha = 0.8) +
+    scale_fill_gradientn("Predicted\nKn", limits = c(0.9,1.1), colors = c("blue","grey","red"))+
+    geom_contour(aes(z = fit), binwidth = 0.025, colour = "grey40")+
+    theme(panel.background = element_blank(),
+          panel.border = element_rect(fill=NA))+
+    geom_polygon(data=countries, aes(x=long, y=lat, group = group))+
+    xlab("Longitude")+ylab("Latitude")
+  
+  ggsave(smoothPlotName, predict_latlon)
+  ggsave(smoothPlotName2, predict_latlon2)
+  
 }
+
+
+
