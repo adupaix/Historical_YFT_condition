@@ -23,7 +23,7 @@ PLOT_PATH <- file.path(OUTPUT_PATH, "Plots")
 
 arguments <- list(
 #' @reproductibility
-nb_of_times_to_run = 5,
+nb_of_times_to_run = 1,
 SEED = 123456,
 
 #'@arguments:
@@ -59,11 +59,12 @@ allom = "Chassot2015",
 #' @Figure_1
 #' size classes for filtering data
 #' Used to generate Figure 1
-size_classes = c("40-60","<102",">102"),
+# size_classes = c("40-60","<102",">102"),
+size_classes = c(),
 
 size_class_for_model = "all",
 
-fad_fsc = T,
+fad_fsc = F,
 
 deduce_date = T,
 
@@ -439,51 +440,70 @@ for (i in 1:length(seeds)){
       mutate(se = sd / sqrt(n)) %>%
       mutate(group = "all") -> toplot[[1]]
     
-    for (k in 1:length(size_classes)){
-      
-      if (k %in% grep("-", size_classes)){
-        l1 <- as.numeric(sub("-.*", "", size_classes[k]))
-        l2 <- as.numeric(sub(".*-", "", size_classes[k]))
-      } else if (k %in% grep(">", size_classes)){
-        l1 <- as.numeric(sub(">", "", size_classes[k]))
-        l2 <- Inf
-      } else if (k %in% grep("<", size_classes)){
-        l1 <- 0
-        l2 <- as.numeric(sub("<", "", size_classes[k]))
+    if (length(size_classes != 0)){
+      for (k in 1:length(size_classes)){
+        
+        if (k %in% grep("-", size_classes)){
+          l1 <- as.numeric(sub("-.*", "", size_classes[k]))
+          l2 <- as.numeric(sub(".*-", "", size_classes[k]))
+        } else if (k %in% grep(">", size_classes)){
+          l1 <- as.numeric(sub(">", "", size_classes[k]))
+          l2 <- Inf
+        } else if (k %in% grep("<", size_classes)){
+          l1 <- 0
+          l2 <- as.numeric(sub("<", "", size_classes[k]))
+        }
+        
+        data %>% filter(fork_length >= l1 & fork_length <= l2 ) %>%
+          ddply(.variables = "fishing_year", summarise, n=n()) %>%
+          filter(n > 50) -> spl_sizes[[k+1]]
+        
+        y_of_int <- spl_sizes[[k+1]]$fishing_year
+        
+        data %>%
+          filter(fishing_year %in% y_of_int & fork_length >= l1 & fork_length <= l2) -> data_byclass[[k+1]]
+        
+        ddply(data_byclass[[k+1]], .variables = "fishing_year", summarise, sd = sd(Kn), m = mean(Kn), n = n()) %>%
+          mutate(se = sd / sqrt(n)) %>%
+          mutate(group = size_classes[k]) -> toplot[[k+1]]
       }
       
-      data %>% filter(fork_length >= l1 & fork_length <= l2 ) %>%
-        ddply(.variables = "fishing_year", summarise, n=n()) %>%
-        filter(n > 50) -> spl_sizes[[k+1]]
-      
-      y_of_int <- spl_sizes[[k+1]]$fishing_year
-      
-      data %>%
-        filter(fishing_year %in% y_of_int & fork_length >= l1 & fork_length <= l2) -> data_byclass[[k+1]]
-      
-      ddply(data_byclass[[k+1]], .variables = "fishing_year", summarise, sd = sd(Kn), m = mean(Kn), n = n()) %>%
-        mutate(se = sd / sqrt(n)) %>%
-        mutate(group = size_classes[k]) -> toplot[[k+1]]
+      toplot <- bind_rows(toplot)
+      toplot$group <- factor(toplot$group, levels = c(size_classes, "all"))
+    } else {
+      toplot <- toplot[[1]]
     }
-    
-    toplot <- bind_rows(toplot)
-    toplot$group <- factor(toplot$group, levels = c(size_classes, "all"))
     
     # get holes in data, to plot a vertical line
     diff_following_years <- lead(as.numeric(levels(as.factor(toplot$fishing_year)))) - as.numeric(levels(as.factor(toplot$fishing_year)))
     line_pos = which(diff_following_years != 1)+0.5
     
-    fig1 <- ggplot(toplot, aes(x = as.factor(fishing_year), y = m, color = group, group = group))+
-      geom_point(size = 0.75, position = position_dodge(0.25))+
-      scale_color_brewer("Size class", palette = "Set1")+
-      geom_vline(aes(xintercept = line_pos))+
-      geom_errorbar(aes(ymin = m - se, ymax = m + se), width = 0.2, size = 0.75, position = position_dodge(0.25))+
-      theme(axis.text.x = element_text(angle = 90),
-            panel.border = element_rect(color = "black", fill = NA))+
-      ylab("Mean Kn")+
-      xlab("Fishing year")
+    if (length(size_classes) != 0){
+      fig1 <- ggplot(toplot, aes(x = as.factor(fishing_year), y = m, color = group, group = group))+
+        geom_point(size = 0.75, position = position_dodge(0.25))+
+        scale_color_brewer("Size class", palette = "Set1")+
+        geom_vline(aes(xintercept = line_pos))+
+        geom_errorbar(aes(ymin = m - se, ymax = m + se), width = 0.2, size = 0.75, position = position_dodge(0.25))+
+        theme(axis.text.x = element_text(angle = 90),
+              panel.border = element_rect(color = "black", fill = NA))+
+        ylab("Mean Kn")+
+        xlab("Fishing year")
+    } else {
+      fig1 <- ggplot(toplot, aes(x = as.factor(fishing_year), y = m))+
+        geom_point(size = 0.75, position = position_dodge(0.25))+
+        scale_color_brewer("Size class", palette = "Set1")+
+        geom_vline(aes(xintercept = line_pos))+
+        geom_errorbar(aes(ymin = m - se, ymax = m + se), width = 0.2, size = 0.75, position = position_dodge(0.25))+
+        theme(axis.text.x = element_text(angle = 90),
+              panel.border = element_rect(color = "black", fill = NA),
+              axis.text = element_text(size = 16),
+              axis.title = element_text(size = 18))+
+        ylab("Mean Kn")+
+        xlab("Fishing year")
+    }
     
-    ggsave(fig1Name, fig1)
+    
+    ggsave(fig1Name, fig1, width = 8, height = 6)
     
     # rm(data_by_class) ; invisible(gc())
     
@@ -821,6 +841,7 @@ for (i in 1:length(seeds)){
   predict_latlon <- predict_latlon +
     geom_tile(aes(fill = fit), alpha = 0.8) +
     scale_fill_gradientn("Predicted\nKn", limits = c(0.9,1.1), colors = c("blue","grey","red"))+
+    # geom_contour(aes(z = fit), binwidth = 0.5, colour = "grey40")+
     geom_contour(aes(z = fit), binwidth = 0.025, colour = "grey40")+
     theme(panel.background = element_blank(),
           panel.border = element_rect(fill=NA))+
@@ -842,4 +863,73 @@ for (i in 1:length(seeds)){
 }
 
 
+#'******************************
+#' plots of the GAM coefficients
+#'******************************
 
+
+get.coeff <- function(gam, var, type = c("coeff","se","p.value")){
+  if(type == "coeff"){
+    coeff <- coefficients(gam)
+  } else if (type == "se"){
+    coeff <- summary(gam)$se
+  } else if (type == "p.value"){
+    coeff <- summary(gam)$p.pv
+  }
+  
+  coeff <- coeff[grep(var, names(coeff))]
+  names(coeff) <- gsub(pattern = paste0(".*",substr(var, nchar(var)-1, nchar(var))),
+                       "", names(coeff))
+  return(coeff)
+}
+
+
+plot.coeff <- function(gam, var, levels_order = NULL,
+                       labelx = var){
+  
+  coeff <- get.coeff(gam, var, type = "coeff")
+  se <- get.coeff(gam, var, type = "se")
+  p.value <- get.coeff(gam, var, type = "p.value")
+  
+  if (!is.null(levels_order)){
+    if (length(levels_order) != length(coeff)){
+      stop("Error: wrong levels provided")
+    } else {
+      coeff <- coeff[levels_order]
+      se <- se[levels_order]
+      p.value <- p.value[levels_order]
+    }
+  } else {
+    levels_order <- names(coeff)
+  }
+  
+  my_colors <- ifelse(p.value < 0.05 / length(p.value), "black", "grey40")
+  
+  data.frame(coeff) %>% tibble::rownames_to_column(var = var) %>%
+    mutate(se = se, col = my_colors) -> df
+  
+  p <- ggplot()+
+    geom_point(data = df, aes(x=factor(!!rlang::sym(var), levels = levels_order),
+                              y = coeff), color = df$col)+
+    # geom_errorbar(data = df, aes(x=factor(!!rlang::sym(var), levels = levels_order),
+    #                              ymin = coeff - se,
+    #                              ymax = coeff + se),
+    #               color = df$col, width = 0.25/length(levels_order), size = 0.5)+
+    scale_y_continuous(limits = c(-0.15, 0.15))+
+    geom_hline(yintercept = 0)+
+    xlab(labelx)+ylab("GAM coefficient")+
+    theme(axis.text.x = element_text(angle = 90),
+          panel.border = element_rect(color = "black", fill = NA),
+          axis.text = element_text(size = 16),
+          axis.title = element_text(size = 18))
+  
+  return(p)
+}
+
+p1 <- plot.coeff(gam, "fishing_year", labelx = "Year")
+p2 <- plot.coeff(gam, "fishing_quarter", labelx = "Quarter")
+p3 <- plot.coeff(gam, "size_class", levels_order = c("60-80","80-100","100-120",">120"), labelx = "Size Class")
+
+# ggsave("/home/adupaix/Documents/These/Presentations/CEPA_2021/2021-10-26 10:21:46/Plots/year.png" ,p1)
+# ggsave("/home/adupaix/Documents/These/Presentations/CEPA_2021/2021-10-26 10:21:46/Plots/quarter.png" ,p2)
+# ggsave("/home/adupaix/Documents/These/Presentations/CEPA_2021/2021-10-26 10:21:46/Plots/size_class.png" ,p3)
