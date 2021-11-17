@@ -3,8 +3,7 @@
 #'@update : 2021-11-17
 #'@email : amael.dupaix@ens-lyon.fr
 #'#*******************************************************************************************************************
-#'@description :  Initialization routine INSIDE THE FOR LOOP
-#' load libraries, prepare files names, etc
+#'@description :  Subroutine to get the fishing locations associated with each line
 #'#*******************************************************************************************************************
 #'@revisions
 #'#*******************************************************************************************************************
