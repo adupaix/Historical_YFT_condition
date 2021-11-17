@@ -71,3 +71,6 @@ if (nb_of_times_to_run != 1){
 } else {
   seeds = SEED
 }
+
+msg <- "\14" ; cat(msg) ; lines.to.cat <- c(msg)
+msg <- paste("-------- PREPARING DATA --------") ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)

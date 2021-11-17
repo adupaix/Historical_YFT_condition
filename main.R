@@ -18,14 +18,15 @@ WD <- getwd()
 DATA_PATH <- file.path(WD, "0.Data/")
 
 FUNC_PATH <- file.path(WD,"1.Functions")
-OUTPUT_PATH <- file.path(WD, "3.Outputs", format(Sys.time()))
+# OUTPUT_PATH <- file.path(WD, "3.Outputs", format(Sys.time()))
+OUTPUT_PATH <- file.path(WD, "3.Outputs", format(Sys.Date()))
 ROUT_PATH <- file.path(WD,"6.Sub-routines")
 
 PLOT_PATH <- file.path(OUTPUT_PATH, "Plots")
 
 arguments <- list(
 #' @reproductibility
-nb_of_times_to_run = 1, #' @for_study: set to 1000?
+nb_of_times_to_run = 10, #' @for_study: set to 1000?
 SEED = 123456,
 
 #'@arguments:
@@ -36,7 +37,7 @@ SEED = 123456,
 #'    If F, runs in sequential
 #'    if T, runs in parallel
 #' Second element of the vector: fraction of the cores to be used
-Parallel = c(T, 1/2),
+Parallel = c(F, 1/2),
 
 #' If RESET is FALSE, try to read the prepped data
 #' else, prep the data in any case
@@ -115,7 +116,7 @@ year_by_groups = F,
 #' or transform it using the Geary-Hinkley transformation (T)
 #' see https://doi.org/10.1287/mnsc.21.11.1338
 #' @for_study: set to T
-Kn_transformation = F,
+Kn_transformation = T,
 
 #' Which method is to be used to determine the geomtery
 #' either consider the centroid of the multipoint
@@ -130,7 +131,12 @@ geometry_method = "sampling",
 #'                     or c(-1,1) if the GH transformation is applied
 #' @for_study: set to NULL
 # smooth_col_limits = c(0.8,1)
-smooth_col_limits = NULL
+smooth_col_limits = NULL,
+
+#' Choose if the GAMs are generated following this script (F)
+#' or if the scripts necessary to generate the GAMs
+#' on a cluster are generated (T)
+cluster = T
 
 )
 
@@ -194,7 +200,7 @@ sink()
 #' ********************
 #' at that point if the entries with missing dates are discarded
 if(deduce_date == F){
-  source(file.path(ROUT_PATH, "1.Calc_fishing_date.R"))
+  source(file.path(ROUT_PATH, "2.Calc_fishing_date.R"))
 }
 
 #' ********************
@@ -203,176 +209,64 @@ if(deduce_date == F){
 source(file.path(ROUT_PATH, "1.Generate_figures.R"))
 
 
-for (i in 1:length(seeds)){
-  
-  #' ********************
-  #' Init in @for loop:
-  #' ********************
-  source(file.path(ROUT_PATH, "0.i.Init_in_loop.R"))
-  
-  
-  #' ********************
-  #' Get fishing date:
-  #' ********************
-  #' at that point if the missing dates are deduced
-  if(deduce_date == T){
-    source(file.path(ROUT_PATH, "2.Calc_fishing_date.R"))
-  }
-  
-  #' ********************
-  #' Get fishing location:
-  #' ********************
-  source(file.path(ROUT_PATH, "3.Get_fishing_location.R"))
-  
-  
-  #' ***************
-  #' Perform GAM:
-  #' ***************
-  
-  #' If size_class_for_model != 'all', subsample the data to keep only one size class
-  if (size_class_for_model != 'all'){
-    
-    if (size_class_for_model %in% size_classes_fig1){
-      
-      data <- data_byclass[[grep(size_class_for_model, size_classes_fig1)+1]]
-      
-    } else {
-      
-      if (grepl("-", size_class_for_model)){
-        l1 <- as.numeric(sub("-.*", "", size_class_for_model))
-        l2 <- as.numeric(sub(".*-", "", size_class_for_model))
-      } else if (grepl(">", size_class_for_model)){
-        l1 <- as.numeric(sub(">", "", size_class_for_model))
-        l2 <- Inf
-      } else if (grepl("<", size_class_for_model)){
-        l1 <- 0
-        l2 <- as.numeric(sub("<", "", size_class_for_model))
-      }
-      
-      data %>% filter(fork_length > l1 & fork_length <= l2 ) -> data
-      
-    }
-  }
-  
-  #' @1. Scale quantitative variables + scale and center geographical variables
-  #' + filter data according to the provided arguments
-  if (year_by_groups){
-    ref <- (min(data$fishing_year)-5):(max(data$fishing_year)+5)
-    ref <- ref[which(ref %% 5 == 0)]
-    
-    f <- function(x, ref) ref[max(which(ref<=x))]
-    
-    data$fishing_year <- mapply(f, data$fishing_year, MoreArgs = list(ref = ref))
-  }
-  
-  data %>% mutate(scaled_FL = scale(fork_length, scale = T, center = F),
-                  scaled_lon = scale(lon, scale = T, center = T),
-                  scaled_lat = scale(lat, scale = T, center = T),
-                  fishing_month = as.factor(fishing_month),
-                  fishing_quarter = as.factor(fishing_quarter),
-                  fishing_year = as.factor(fishing_year)) -> data
-  
-  data$size_class <- NA
-  for (k in 1:length(size_class_levels)){
-    if (k == 1){
-      data$size_class[which(data$fork_length <= as.numeric(sub("<", "", size_class_levels[k])))] <- size_class_levels[k]
-    } else if (k == length(size_class_levels)){
-      data$size_class[which(data$fork_length > as.numeric(sub(">", "", size_class_levels[k])))] <- size_class_levels[k]
-    } else {
-      data$size_class[which(data$fork_length > as.numeric(sub("-.*", "", size_class_levels[k])) &
-                              data$fork_length <= as.numeric(sub(".*-", "", size_class_levels[k])))] <- size_class_levels[k]
-    }
-  }
 
-  if (fad_fsc == T){
-    data %>% dplyr::filter(fishing_mode %in% c("DFAD","FSC")) %>%
-      mutate(fishing_mode = as.factor(fishing_mode)) -> data
+if (cluster == T){
+  #' ******************************
+  #' Generate script for datarmor
+  #' ******************************
+  # save all the objects of the environments to a list
+  env <- mget(ls())
+  fname <- "all_objects.rds"
+  # and save that list as an .rds file (which will be loaded again afterwards)
+  saveRDS(env, file.path(WD, fname))
+  
+  #' *************************
+  #' Generate the command list
+  #' *************************
+  commands <- paste0("Rscript ",
+                     file.path(WD, "main_cluster.R "),
+                     fname, " ",
+                     1:nb_of_times_to_run)
+  
+  file.create(file.path(WD, "commands_bootstrap.txt"))
+  cmds <- file(file.path(WD, "commands_bootstrap.txt"), open = "w")
+  writeLines(commands, cmds)
+  close(cmds)
+  
+  #source(file.path(ROUT_PATH, "6.Datarmor_prep.R"))
+  
+} else {
+  
+  for (i in 1:length(seeds)){
     
-    if (fishing_mode_for_model != 'all'){
-      data %>% filter(fishing_mode == fishing_mode_for_model) -> data
+    seed.i <- seeds[i]
+    
+    #' ********************
+    #' Init in @for loop:
+    #' ********************
+    source(file.path(ROUT_PATH, "0.i.Init_in_loop.R"))
+    
+    
+    #' ********************
+    #' Get fishing date:
+    #' ********************
+    #' at that point if the missing dates are deduced
+    if(deduce_date == T){
+      source(file.path(ROUT_PATH, "2.Calc_fishing_date.R"))
     }
     
-  }
-  
-  if(Kn_transformation == T){
+    #' ********************
+    #' Get fishing location:
+    #' ********************
+    source(file.path(ROUT_PATH, "3.Get_fishing_location.R"))
     
-    data %>% mutate(Kn = geary.hinkley.transform(Kn,
-                                                 weight_th,
-                                                 whole_fish_weight,
-                                                 cor.method = "pearson")) -> data
-  }
-  
-  #' @2. Testing for colinearity among variables
-  # Considered variables : lon, lat, fishing_quarter, size_class, year
-  car::vif(lm(Kn ~ scaled_lon + scaled_lat + scaled_FL + fishing_year + fishing_quarter + fishing_mode, data = data))
-  
-  
-  #' @3. Testing for spatial autocorrelation
-  #'  @!!! the script was very long if size_class_for_model == "all" (26,000 entries in the df)
-  #'  hence, the spatial autocorrelation is tested on a set of points only
-  if (check_spatial_autocorr){
-    part = 1 ; source(file.path(ROUT_PATH, "4.Spatial_autocorr.R"))
-  }
-  
-  
-  #' @4. Visualisation données
-  part = 1 ; source(file.path(ROUT_PATH, "5.Generate_gam_plots.R"))
-  
-  #' @5. Build the model
-  if (size_class_for_model == "all"){
-    if (fad_fsc == F){
-    gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + te(scaled_lon, scaled_lat),
-                        data = data)
     
-    gam2 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + s(scaled_lon, scaled_lat),
-                      data = data)
+    #' ***************
+    #' Perform GAM:
+    #' ***************
+    source(file.path(ROUT_PATH, "4.GAM.R"))
     
-    } else {
-      if (fishing_mode_for_model == "all"){
-        gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + fishing_mode + te(scaled_lon, scaled_lat),
-                          data = data)
-        gam2 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + fishing_mode + s(scaled_lon, scaled_lat),
-                          data = data)
-      } else {
-        gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + te(scaled_lon, scaled_lat),
-                          data = data)
-        gam2 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + s(scaled_lon, scaled_lat),
-                          data = data)
-      }
-    }
-  } else {
-    if (fad_fsc == F){
-      gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + te(scaled_lon, scaled_lat),
-                        data = data)
-      
-      gam2 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + s(scaled_lon, scaled_lat),
-                        data = data)
-      
-    } else {
-      if (fishing_mode_for_model == "all"){
-        gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + fishing_mode + te(scaled_lon, scaled_lat),
-                          data = data)
-        gam2 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + fishing_mode + s(scaled_lon, scaled_lat),
-                          data = data)
-      } else {
-        gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + te(scaled_lon, scaled_lat),
-                          data = data)
-        gam2 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + s(scaled_lon, scaled_lat),
-                          data = data)
-      }
-    }
   }
-  
-  #' @6. Test spatial autocorrelation on the residuals
-  if(check_spatial_autocorr){
-    part = 2 ; source(file.path(ROUT_PATH, "4.Spatial_autocorr.R"))
-  }
-  
-  #' @7. Generate the plots associated with the GAMs
-  part = 2 ; source(file.path(ROUT_PATH, "5.Generate_gam_plots.R"))
-  
   
 }
-
-
 

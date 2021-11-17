@@ -17,7 +17,7 @@ prep_wl_data <- function(DATA_PATH,
                          ncores = 1,
                          summaryName){
   
-  msg <- "\n~~~~ Preparing weight-length data ~~~~\n\n" ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
+  msg <- "\n\n~~~~ Preparing weight-length data ~~~~\n\n" ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
   
   preped_file <- file.path(DATA_PATH,"preped_wl_data")
   
