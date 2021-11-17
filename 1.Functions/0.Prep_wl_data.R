@@ -1,3 +1,12 @@
+#'#*******************************************************************************************************************
+#'@author : Amael DUPAIX
+#'@update : 2021-11-17
+#'@email : amael.dupaix@ens-lyon.fr
+#'#*******************************************************************************************************************
+#'@description :  Function to prepare the dataset (apply first filters, etc)
+#'#*******************************************************************************************************************
+#'@revisions
+#'#*******************************************************************************************************************
 
 prep_wl_data <- function(DATA_PATH,
                          data,
@@ -8,7 +17,7 @@ prep_wl_data <- function(DATA_PATH,
                          ncores = 1,
                          summaryName){
   
-  msg <- "\n~~~~ Preparing weight-length data ~~~~\n\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+  msg <- "\n~~~~ Preparing weight-length data ~~~~\n\n" ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
   
   preped_file <- file.path(DATA_PATH,"preped_wl_data")
   
@@ -23,7 +32,7 @@ prep_wl_data <- function(DATA_PATH,
   
   
   if (file.exists(preped_file) & read == TRUE){
-    msg <- paste("  ~~~ Reading prepared data file from ",preped_file,"\n") ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+    msg <- paste("  ~~~ Reading prepared data file from ",preped_file,"\n") ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
     data <- readRDS(preped_file)
     
     sink(summaryName, append = T)
@@ -37,7 +46,7 @@ prep_wl_data <- function(DATA_PATH,
     cat("- Total number of entries:", N1)
     sink()
     
-    msg <- "  ~~~ Applying first filters\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+    msg <- "  ~~~ Applying first filters\n" ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
     
     ## select the variables of interest
     data %>% dplyr::select(fish_identifier, ocean_code, quadrant, gear_code,
@@ -78,31 +87,31 @@ prep_wl_data <- function(DATA_PATH,
       mutate(fl_origin = as.factor(ifelse(!is.na(fork_length), "measured", "deduced"))) -> data
 
     N2 <- dim(data)[1]
-    msg <- "    - Deleted data with no length measurement\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+    msg <- "    - Deleted data with no length measurement\n" ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
     
     
     data %>% dplyr::filter(!is.na(whole_fish_weight)) -> data
     N3 <- dim(data)[1]
-    msg <- "    - Deleted data with no weight measurement\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+    msg <- "    - Deleted data with no weight measurement\n" ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
     
     
     data %>% dplyr::filter(ocean_code == "IO") -> data
     N4 <- dim(data)[1]
-    msg <- "    - Deleted data of fish not from the IO\n\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+    msg <- "    - Deleted data of fish not from the IO\n\n" ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
     
     
-    msg <- paste("~~~ Sampling missing FL values among other individuals with the same FDL: ",calcfdl,"\n") ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+    msg <- paste("~~~ Sampling missing FL values among other individuals with the same FDL: ",calcfdl,"\n") ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
     if (calcfdl == TRUE){
       data <- calc_FL_from_FDL(data, sd_max = calcfdl.sd_max, spl_size_min = calcfdl.spl_size)
     } else{
-      msg <- paste("    - Number of deleted entries (no fork length available):",sum(is.na(data$fork_length)), "\n\n") ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+      msg <- paste("    - Number of deleted entries (no fork length available):",sum(is.na(data$fork_length)), "\n\n") ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
       
       data %>% dplyr::filter(!is.na(fork_length)) -> data
     }
     
     N5 <- dim(data)[1]
     
-    msg <- "  ~~~ Getting geometry information from str: " ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+    msg <- "  ~~~ Getting geometry information from str: " ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
     if (getgeom == TRUE){
       
       data %>% mutate(geom_type = str_replace_all(as.character(geometry), "[^[:alpha:]]", ""),
@@ -204,7 +213,7 @@ prep_wl_data <- function(DATA_PATH,
     
   }
   
-  return(list(data, lines.to.cat))
+  return(data)
   
 }
 
