@@ -43,7 +43,7 @@ seed.i <- seeds[i]
 #' ***************
 source(file.path(FUNC_PATH, "install_libraries.R"))
 
-srcUsedPackages <- c("plyr", "dplyr","tidyr","stringr","lubridate","sf", "ggplot2", "tibble",
+srcUsedPackages <- c("plyr", "dplyr","tidyr","sf", "ggplot2", "tibble",
                      "cowplot","RColorBrewer", "MASS","truncnorm", "mgcv", "spdep")
 
 if (cluster == F){srcUsedPackages <- c(srcUsedPackages, "gratia", "parallel", "foreach", "doSNOW")} else {Parallel[1] <- F}
