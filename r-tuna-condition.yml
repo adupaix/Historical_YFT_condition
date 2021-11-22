@@ -1,4 +1,4 @@
-name: /home1/datahome/adupaix/conda/r-tuna-condition
+name: r-tuna-condition
 channels:
   - conda-forge
   - defaults
