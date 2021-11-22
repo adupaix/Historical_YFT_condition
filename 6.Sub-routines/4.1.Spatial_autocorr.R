@@ -17,10 +17,10 @@ if (part == 1){
   
   if (size_class_for_model == "all"){
     to_sample <- sample.int(dim(data)[1], size = 2000)
-    subdata <- data[to_sample,]
   } else {
-    subdata = data
+    to_sample <- 1:(dim(data)[1])
   }
+  subdata <- data[to_sample,]
   
   c <- seq(1,10,1)
   listw <- list() ; mc <- list() ; test <- list()
