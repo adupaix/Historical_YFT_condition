@@ -75,3 +75,10 @@ plot.coeff <- function(gam, var, levels_order = NULL,
   return(p)
 }
 
+
+qqplot.gam <- function(residus){
+  ggplot2::ggplot() +
+    ggplot2::stat_qq(ggplot2::aes(sample = res))+
+    ggplot2::stat_qq_line(ggplot2::aes(sample = res), col = 2)+
+    ggplot2::labs(x = "Theoretical quantiles", y = "Sample quantiles")
+}

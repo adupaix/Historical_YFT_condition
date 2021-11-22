@@ -55,14 +55,19 @@ if (part == 1){
     #' @save diagnostic plots of the gams
     pc1 <- gratia::appraise(gam1)
     pc2 <- gratia::appraise(gam2)
-    ggsave(diagnoPlotNames[1], pc1, width = 100, height = 100, units = "mm", dpi = "retina")
-    ggsave(diagnoPlotNames[2], pc2, width = 100, height = 100, units = "mm", dpi = "retina")
     
-    saveRDS(gam1, gamteSummary)
-    saveRDS(gam2, gamsSummary)
   } else {
-    #' ajouter qqnorm et sauvegarde
+    
+    pc1 <- qqplot.gam(residuals(gam1))
+    pc2 <- qqplot.gam(residuals(gam2))
   }
+  
+  ggsave(diagnoPlotNames[1], pc1, width = 100, height = 100, units = "mm", dpi = "retina")
+  ggsave(diagnoPlotNames[2], pc2, width = 100, height = 100, units = "mm", dpi = "retina")
+  
+  saveRDS(gam1, gamteSummary)
+  saveRDS(gam2, gamsSummary)
+  
   
   #' @save plots of the coefficients of the gams
   countries <- map_data("world")
