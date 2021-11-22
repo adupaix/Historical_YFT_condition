@@ -87,6 +87,7 @@ size_class_for_model = "<75",
 #' @!! the vector has to be in the format c("<x1","x1-x2",...,"x(n-1)-xn",">xn")
 #' @for_study: set to c("<75","75-120",">120")
 size_class_levels = c("<75","75-120",">120"),
+# size_class_levels = c("<90",">90"),
 
 #' choose if the fishing mode is included in the GAM
 #' variables (T) or not (F)
@@ -123,7 +124,7 @@ Kn_transformation = T,
 #' or randomly sample a point from the multipoint
 #'    one of "centroid" of "sampling"
 #' @for_study: set to "sampling"
-geometry_method = "sampling",
+geometry_method = "centroid",
 
 #' The limits of the colour scale of
 #' the plot representing the lat-lon smooth

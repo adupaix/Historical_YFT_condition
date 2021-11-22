@@ -35,7 +35,7 @@ if (part == 1){
                                  longlat = T)
     
     msg <- "\n      - Getting weight list from nearest neighboors" ; cat(msg)
-    listw[[k]] <- nb2listw(nb_list, zero.policy = T)
+    listw[[k]] <- spdep::nb2listw(nb_list, zero.policy = T)
     
     msg <- "\n      - Performing Moran's I tests" ; cat(msg)
     mc[[k]] <- moran.mc(subdata$Kn, listw = listw[[k]], nsim = 99, zero.policy = T)

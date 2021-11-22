@@ -51,14 +51,18 @@ if (part == 1){
   
 } else if (part ==2){
   
-  #' @save diagnostic plots of the gams
-  pc1 <- gratia::appraise(gam1)
-  pc2 <- gratia::appraise(gam2)
-  ggsave(diagnoPlotNames[1], pc1, width = 100, height = 100, units = "mm", dpi = "retina")
-  ggsave(diagnoPlotNames[2], pc2, width = 100, height = 100, units = "mm", dpi = "retina")
-  
-  saveRDS(gam1, gamteSummary)
-  saveRDS(gam2, gamsSummary)
+  if (cluster == F){
+    #' @save diagnostic plots of the gams
+    pc1 <- gratia::appraise(gam1)
+    pc2 <- gratia::appraise(gam2)
+    ggsave(diagnoPlotNames[1], pc1, width = 100, height = 100, units = "mm", dpi = "retina")
+    ggsave(diagnoPlotNames[2], pc2, width = 100, height = 100, units = "mm", dpi = "retina")
+    
+    saveRDS(gam1, gamteSummary)
+    saveRDS(gam2, gamsSummary)
+  } else {
+    #' ajouter qqnorm et sauvegarde
+  }
   
   #' @save plots of the coefficients of the gams
   countries <- map_data("world")

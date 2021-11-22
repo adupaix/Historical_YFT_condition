@@ -18,7 +18,8 @@ installAndLoad_packages <-function(srcUsedPackages = srcUsedPackages, loadPackag
   {
     for(i in 1:length(neededPackages))
     {
-      install.packages(neededPackages[i], quiet = TRUE, verbose = TRUE)
+      install.packages(neededPackages[i], quiet = TRUE, verbose = TRUE,
+                       repos = "http://cran.us.r-project.org")
     }
   }
   correclty_installed <- srcUsedPackages[srcUsedPackages %in% userPackages$Package]
