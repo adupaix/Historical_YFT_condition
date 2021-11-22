@@ -74,7 +74,7 @@ bind_rows(data_interval_dates, data_exact_dates) %>%
   dplyr::arrange("fish_identifier") %>%
   mutate(t_fishing_sampling = as.numeric(difftime(fish_sampling_date, fishing_date, units = "days")))-> data_dates
 
-if (deduce_date){
+if (deduce_date & cluster == F){
   # fit a log normal law to the time between fishing and sampling
   fit_lnorm = fitdistrplus::fitdist(data_dates$t_fishing_sampling, "lnorm")
   
