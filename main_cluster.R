@@ -43,13 +43,15 @@ seed.i <- seeds[i]
 #' ***************
 source(file.path(FUNC_PATH, "install_libraries.R"))
 
-srcUsedPackages <- c("plyr", "dplyr","tidyr","sf", "ggplot2", "tibble",
-                     "cowplot","RColorBrewer", "MASS","truncnorm", "mgcv", "spdep")
+srcUsedPackages <- c("plyr", "dplyr","tidyr","lubridate","sf", "ggplot2","tibble",
+                     "cowplot","RColorBrewer", "MASS","truncnorm", "mgcv", "spdep",
+                     "doSNOW")
 
-if (cluster == F){srcUsedPackages <- c(srcUsedPackages, "gratia", "parallel", "foreach", "doSNOW")} else {Parallel[1] <- F}
+# if we execute this script, cluster == T, no need to test it
+Parallel[1] <- F
+VERBOSE <- F
 
 installAndLoad_packages(srcUsedPackages, loadPackages = TRUE)
-
 
 #' ********************
 #' Init in @for loop:

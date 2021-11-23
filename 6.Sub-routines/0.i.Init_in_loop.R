@@ -11,8 +11,10 @@
 
 set.seed(seed.i)
 
-msg <- "\14" ; cat(msg) ; lines.to.cat <- c(msg)
-msg <- paste("-------- ITERATION", i, "/", length(seeds), " - SEED NB =", seed.i, "--------") ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+if (VERBOSE){
+  msg <- "\14" ; cat(msg) ; lines.to.cat <- c(msg)
+  msg <- paste("-------- ITERATION", i, "/", length(seeds), " - SEED NB =", seed.i, "--------") ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+}
 
 # Initialize names
 try(dir.create(file.path(OUTPUT_PATH, seed.i, "Plots"), showWarnings = F, recursive = T))
@@ -21,10 +23,10 @@ diagnoPlotNames <- c(file.path(OUTPUT_PATH, seed.i, "diagn_gam_te.png"),
 moranPlotName <- file.path(OUTPUT_PATH, seed.i, "Moran_I_plot.png")
 gamteSummary <- file.path(OUTPUT_PATH, seed.i, "gam_te.rds")
 gamsSummary <- file.path(OUTPUT_PATH, seed.i, "gam_s.rds")
-smoothPlotNames <- c(file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_te.png"),
-                     file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_te_withpoints.png"),
-                     file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_s.png"),
-                     file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_s_withpoints.png"))
+smoothPlotNames <- c(file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_s.png"),
+                     file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_s_withpoints.png"),
+                     file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_te.png"),
+                     file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_te_withpoints.png"))
 gamCoeffPlotNames <- c(file.path(OUTPUT_PATH, seed.i, "gam_coeff_year.png"),
                        file.path(OUTPUT_PATH, seed.i, "gam_coeff_quarter.png"),
                        file.path(OUTPUT_PATH, seed.i, "gam_coeff_size_class.png"),

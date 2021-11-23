@@ -15,7 +15,9 @@
 #' Evolution of the condition factor (Kn)
 #' according to time
 
-msg <- "\n\n~~~~ Generating Figure 1 ~~~~\n" ; lines.to.cat <- c(lines.to.cat, msg) ; cat(lines.to.cat)
+if (VERBOSE){
+  msg <- "\n\n~~~~ Generating Figure 1 ~~~~\n" ; lines.to.cat <- c(lines.to.cat, msg) ; cat(lines.to.cat)
+}
 
 data_byclass <- list()
 spl_sizes <- list()
@@ -104,7 +106,10 @@ ggsave(fig1Name, fig1, width = 8, height = 6)
 #' FSC and FAD associated schools
 
 if (fishing_mode_for_model == "all"){
-  msg <- "\n\n~~~~ Generating Figure 2 ~~~~\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+  
+  if (VERBOSE){
+    msg <- "\n\n~~~~ Generating Figure 2 ~~~~\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+  }
   
   p3 <- figure2(data = data,
                 var.to.compare = "Kn",

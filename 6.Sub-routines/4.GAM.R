@@ -95,51 +95,51 @@ part = 1 ; source(file.path(ROUT_PATH, "4.2.Generate_gam_plots.R"))
 #' @4. Build the model
 if (size_class_for_model == "all"){
   if (fad_fsc == F){
-    gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + te(scaled_lon, scaled_lat),
-                      data = data)
+    # gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + te(scaled_lon, scaled_lat),
+    #                   data = data)
     
-    gam2 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + s(scaled_lon, scaled_lat),
+    gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + s(scaled_lon, scaled_lat),
                       data = data)
     
   } else {
     if (fishing_mode_for_model == "all"){
-      gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + fishing_mode + te(scaled_lon, scaled_lat),
-                        data = data)
-      gam2 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + fishing_mode + s(scaled_lon, scaled_lat),
+      # gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + fishing_mode + te(scaled_lon, scaled_lat),
+      #                   data = data)
+      gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + fishing_mode + s(scaled_lon, scaled_lat),
                         data = data)
     } else {
-      gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + te(scaled_lon, scaled_lat),
-                        data = data)
-      gam2 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + s(scaled_lon, scaled_lat),
+      # gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + te(scaled_lon, scaled_lat),
+      #                   data = data)
+      gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + s(scaled_lon, scaled_lat),
                         data = data)
     }
   }
 } else {
   if (fad_fsc == F){
-    gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + te(scaled_lon, scaled_lat),
-                      data = data)
+    # gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + te(scaled_lon, scaled_lat),
+    #                   data = data)
     
-    gam2 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + s(scaled_lon, scaled_lat),
+    gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + s(scaled_lon, scaled_lat),
                       data = data)
     
   } else {
     if (fishing_mode_for_model == "all"){
-      gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + fishing_mode + te(scaled_lon, scaled_lat),
-                        data = data)
-      gam2 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + fishing_mode + s(scaled_lon, scaled_lat),
+      # gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + fishing_mode + te(scaled_lon, scaled_lat),
+      #                   data = data)
+      gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + fishing_mode + s(scaled_lon, scaled_lat),
                         data = data)
     } else {
-      gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + te(scaled_lon, scaled_lat),
-                        data = data)
-      gam2 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + s(scaled_lon, scaled_lat),
+      # gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + te(scaled_lon, scaled_lat),
+      #                   data = data)
+      gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + s(scaled_lon, scaled_lat),
                         data = data)
     }
   }
 }
 
 #' @5. Apply a stepAIC to select the most parsimonious model
-gam1 <- stepAIC.gam(gam1, silent = T)
-gam2 <- stepAIC.gam(gam2, silent = T)
+gam1 <- stepAIC.gam(gam1, verbose = VERBOSE)
+# gam2 <- stepAIC.gam(gam2, verbose = VERBOSE)
 
 
 #' @6. Test spatial autocorrelation on the residuals

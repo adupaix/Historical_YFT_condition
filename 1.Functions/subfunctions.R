@@ -84,8 +84,9 @@ qqplot.gam <- function(residus){
 }
 
 
-stepAIC.gam <- function(gam, silent = F){
+stepAIC.gam <- function(gam, verbose = F){
   
+  x <- unlist(strsplit(as.character(gam$formula)[3], " \\+ "))
   k=1
   l=length(x)
   
@@ -98,7 +99,7 @@ stepAIC.gam <- function(gam, silent = F){
     AIC_init <- AIC(gam)
     
     formula <- paste("gam(",y,"~",paste(x, collapse = " + "),", data =",df,")")
-    if (silent == F){
+    if (verbose){
       cat("~~~ Iteration", k, "~~~\n\nInitial model:", formula)
       cat("\nAIC:", AIC_init, "\n\n")
     }
@@ -110,7 +111,7 @@ stepAIC.gam <- function(gam, silent = F){
         new_formula <- paste("gam(",y,"~",paste(x[-i], collapse = " + "),", data =",df,")")
         AIC.i <- eval(parse(text = paste("AIC(",new_formula,")")))
         
-        if(silent == F){
+        if(verbose){
           cat(new_formula)
           cat("\nAIC:", AIC.i, "\n\n")
         }
@@ -123,7 +124,7 @@ stepAIC.gam <- function(gam, silent = F){
       new_formula <- paste("gam(",y,"~ 1, data =",df,")")
       AIC.i <- eval(parse(text = paste("AIC(",new_formula,")")))
       
-      if(silent == F){
+      if(verbose){
         cat(new_formula)
         cat("\nAIC:", AIC.i, "\n\n")
       }

@@ -20,7 +20,7 @@ srcUsedPackages <- c("plyr", "dplyr","tidyr","lubridate","sf", "ggplot2","tibble
                      "cowplot","RColorBrewer", "MASS","truncnorm", "mgcv", "spdep",
                      "doSNOW")
 
-if (cluster == F){srcUsedPackages <- c(srcUsedPackages, "gratia")} else {Parallel[1] <- F}
+if (cluster == F){srcUsedPackages <- c(srcUsedPackages, "gratia", "parallel")} else {Parallel[1] <- F ; VERBOSE <- F}
 
 installAndLoad_packages(srcUsedPackages, loadPackages = TRUE)
 
@@ -74,5 +74,7 @@ if (nb_of_times_to_run != 1){
   seeds = SEED
 }
 
-msg <- "\14" ; cat(msg) ; lines.to.cat <- c(msg)
-msg <- paste("-------- PREPARING DATA --------") ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+if (VERBOSE){
+  msg <- "\14" ; cat(msg) ; lines.to.cat <- c(msg)
+  msg <- paste("-------- PREPARING DATA --------") ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+}

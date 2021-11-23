@@ -18,7 +18,9 @@
 #' The (2) in data_hidden_multi (changed to MULTIPOINTS and binded to data_multi afterwards)
 #' The (3) and (4) are in data_na_point, and the (4) will be discarded afterwards in the script
 
-msg <- "\n~~~~ Getting fishing location ~~~~\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+if (VERBOSE){
+  msg <- "\n~~~~ Getting fishing location ~~~~\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+}
 
 data %>% filter(geom_type != "MULTIPOINT") %>%
   mutate(geom_sampled = F) -> data_na_point
@@ -41,7 +43,9 @@ bind_rows(data_multi, data_hidden_multi) %>%
   dplyr::arrange("fish_identifier") -> data_multi
 
 if (geometry_method == "sampling"){
-  msg <- "    - Sampling unique points from MULTIPOINT geometries:" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+  if (VERBOSE){
+    msg <- "    - Sampling unique points from MULTIPOINT geometries:" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+  }
   
   sample_size = 1000
   niter <- floor(dim(data_multi)[1]/sample_size) + 1
@@ -50,8 +54,10 @@ if (geometry_method == "sampling"){
   
   for (k in 1:niter){
     
-    cat(lines.to.cat)
-    cat("    Sub-sample ",k,"/",niter, "\n")
+    if (VERBOSE){
+      cat(lines.to.cat)
+      cat("    Sub-sample ",k,"/",niter, "\n")
+    }
     
     if(k == niter){
       indexes <- ((k-1)*sample_size+1):(dim(data)[1])
@@ -73,7 +79,9 @@ if (geometry_method == "sampling"){
   
 } else if (geometry_method == "centroid"){
   
-  msg <- "    - Considering the centroid from MULTIPOINT geometries\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+  if (VERBOSE){
+    msg <- "    - Considering the centroid from MULTIPOINT geometries\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+  }
   
   data_multi %>% st_transform(3857) %>%
     st_centroid() %>%

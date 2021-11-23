@@ -26,7 +26,7 @@ PLOT_PATH <- file.path(OUTPUT_PATH, "Plots")
 
 arguments <- list(
 #' @reproductibility
-nb_of_times_to_run = 100, #' @for_study: set to 1000?
+nb_of_times_to_run = 1, #' @for_study: set to 1000?
 SEED = 123456,
 
 #'@arguments:
@@ -43,6 +43,11 @@ Parallel = c(F, 1/2),
 #' else, prep the data in any case
 #' @for_study: set to T
 RESET = T,
+
+#' If VERBOSE is T, print information at every steps of the script
+#' if F, nothing is printed
+#' @! if cluster==T, VERBOSE is automatically set to F
+VERBOSE = T,
 
 #' When missing, choose to sample fork length (FL) from fish with the same first dorsal length (FDL)
 #'  or not
@@ -128,7 +133,7 @@ geometry_method = "sampling",
 
 #' The limits of the colour scale of
 #' the plot representing the lat-lon smooth
-#' if NULL, the limits are c(0.9,1.1) if the GH transformation is not applied
+#' if NULL, the limits are c(0.9,1.1) if the GH transformation is not appliedd
 #'                     or c(-1,1) if the GH transformation is applied
 #' @for_study: set to NULL
 # smooth_col_limits = c(0.8,1)
@@ -169,13 +174,15 @@ rm(data1, data2)
 #' Prep data:
 #' **********
 data <- prep_wl_data(DATA_PATH, data, calcfdl = calcfdl, read = !RESET, getgeom = getgeom, ncores = nb_cores,
-                     summaryName = summaryName)
+                     summaryName = summaryName, verbose = VERBOSE)
 
 #' ***************
 #' Calculate Kn:
 #' ***************
 
-msg <- "\n\n~~~~ Calculating Kn ~~~~\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+if (VERBOSE){
+  msg <- "\n\n~~~~ Calculating Kn ~~~~\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+}
 
 data %>% filter(species_code_fao %in% species & gear_code == "PS") -> data
 

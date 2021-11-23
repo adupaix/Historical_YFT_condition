@@ -8,8 +8,9 @@
 #'@revisions
 #'#*******************************************************************************************************************
 
-
-msg <- "\n~~~~ Calculating fishing date from interval and/or sampling dates ~~~~\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+if (VERBOSE){
+  msg <- "\n~~~~ Calculating fishing date from interval and/or sampling dates ~~~~\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+}
 
 # keep only the entries for which the exact fishing date is known
 data %>% filter(!is.na(fishing_date)) %>%
@@ -59,7 +60,9 @@ data_interval_dates %>%
 data_exact_dates %>%
   filter(!(fish_identifier %in% error_exact$fish_identifier)) -> data_exact_dates
 
-msg <- paste0("    - Number of removed entries (date errors): ", dim(error_interval)[1]+dim(error_exact)[1], "\n") ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+if (VERBOSE){
+  msg <- paste0("    - Number of removed entries (date errors): ", dim(error_interval)[1]+dim(error_exact)[1], "\n") ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+}
 
 # For data with a date interval, take the middle of the interval
 data_interval_dates %>%
@@ -108,11 +111,15 @@ if (deduce_date & cluster == F){
   #bind data with dates and data with randomly assigned dates
   bind_rows(data_dates, data_no_dates) -> data
   
-  msg <- paste0("    - Number of deduced entries (missing date): ", dim(data_no_dates)[1], "\n") ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+  if (VERBOSE){
+    msg <- paste0("    - Number of deduced entries (missing date): ", dim(data_no_dates)[1], "\n") ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+  }
   
 } else {
   
-  msg <- paste0("    - Number of removed entries (missing date): ", dim(data_no_dates)[1], "\n") ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+  if (VERBOSE){
+    msg <- paste0("    - Number of removed entries (missing date): ", dim(data_no_dates)[1], "\n") ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+  }
   
   data <- data_dates
 }

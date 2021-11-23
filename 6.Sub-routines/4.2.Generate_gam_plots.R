@@ -54,19 +54,19 @@ if (part == 1){
   if (cluster == F){
     #' @save diagnostic plots of the gams
     pc1 <- gratia::appraise(gam1)
-    pc2 <- gratia::appraise(gam2)
+    # pc2 <- gratia::appraise(gam2)
     
   } else {
     
     pc1 <- qqplot.gam(residuals(gam1))
-    pc2 <- qqplot.gam(residuals(gam2))
+    # pc2 <- qqplot.gam(residuals(gam2))
   }
   
   ggsave(diagnoPlotNames[1], pc1, width = 100, height = 100, units = "mm", dpi = "retina")
-  ggsave(diagnoPlotNames[2], pc2, width = 100, height = 100, units = "mm", dpi = "retina")
+  # ggsave(diagnoPlotNames[2], pc2, width = 100, height = 100, units = "mm", dpi = "retina")
   
   saveRDS(gam1, gamteSummary)
-  saveRDS(gam2, gamsSummary)
+  # saveRDS(gam2, gamsSummary)
   
   
   #' @save plots of the coefficients of the gams
@@ -88,7 +88,8 @@ if (part == 1){
     bwidth <- (lims[2]-lims[1])/8
   }
   
-  for (i in c(1,3)){
+  # for (i in c(1,3)){
+  for (i in 1){
     ct_int_pred <- expand_grid(
       scaled_lon = seq(from=min(data$scaled_lon), 
                        to=max(data$scaled_lon), 
@@ -151,19 +152,19 @@ if (part == 1){
   #'******************************
   #' Plots of the GAM coefficients
   #'******************************
-  p1 <- plot.coeff(gam2, "fishing_year", labelx = "Year")
-  p2 <- plot.coeff(gam2, "fishing_quarter", labelx = "Quarter")
+  p1 <- plot.coeff(gam1, "fishing_year", labelx = "Year")
+  p2 <- plot.coeff(gam1, "fishing_quarter", labelx = "Quarter")
   
   ggsave(gamCoeffPlotNames[1], p1)
   ggsave(gamCoeffPlotNames[2], p2)
   
   if (size_class_for_model == 'all'){
-    p3 <- plot.coeff(gam2, "size_class", levels_order = size_class_levels[-1], labelx = "Size Class")
+    p3 <- plot.coeff(gam1, "size_class", levels_order = size_class_levels[-1], labelx = "Size Class")
     ggsave(gamCoeffPlotNames[3], p3)
   }
   
   if (fad_fsc == T & fishing_mode_for_model == "all"){
-    p4 <- plot.coeff(gam2, "fishing_mode", labelx = "School Type")
+    p4 <- plot.coeff(gam1, "fishing_mode", labelx = "School Type")
     ggsave(gamCoeffPlotNames[4], p4)
   }
   
