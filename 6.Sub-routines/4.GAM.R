@@ -44,13 +44,6 @@ if (year_by_groups){
   data$fishing_year <- mapply(f, data$fishing_year, MoreArgs = list(ref = ref))
 }
 
-data %>% mutate(scaled_FL = scale(fork_length, scale = T, center = F),
-                scaled_lon = scale(lon, scale = T, center = T),
-                scaled_lat = scale(lat, scale = T, center = T),
-                fishing_month = as.factor(fishing_month),
-                fishing_quarter = as.factor(fishing_quarter),
-                fishing_year = as.factor(fishing_year)) -> data
-
 data$size_class <- NA
 for (k in 1:length(size_class_levels)){
   if (k == 1){
@@ -62,6 +55,13 @@ for (k in 1:length(size_class_levels)){
                             data$fork_length <= as.numeric(sub(".*-", "", size_class_levels[k])))] <- size_class_levels[k]
   }
 }
+
+data %>% mutate(scaled_lon = scale(lon, scale = T, center = T),
+                scaled_lat = scale(lat, scale = T, center = T),
+                fishing_month = as.factor(fishing_month),
+                fishing_quarter = as.factor(fishing_quarter),
+                fishing_year = as.factor(fishing_year),
+                size_class = as.factor(size_class)) -> data
 
 if (fad_fsc == T){
   data %>% dplyr::filter(fishing_mode %in% c("DFAD","FSC")) %>%
@@ -81,12 +81,7 @@ if(Kn_transformation == T){
                                                cor.method = "pearson")) -> data
 }
 
-#' @2. Testing for colinearity among variables
-# Considered variables : lon, lat, fishing_quarter, size_class, year
-car::vif(lm(Kn ~ scaled_lon + scaled_lat + scaled_FL + fishing_year + fishing_quarter + fishing_mode, data = data))
-
-
-#' @3. Testing for spatial autocorrelation
+#' @2. Testing for spatial autocorrelation
 #'  @!!! the script was very long if size_class_for_model == "all" (26,000 entries in the df)
 #'  hence, the spatial autocorrelation is tested on a set of points only
 if (check_spatial_autocorr){
@@ -94,10 +89,10 @@ if (check_spatial_autocorr){
 }
 
 
-#' @4. Visualisation données
+#' @3. Visualisation données
 part = 1 ; source(file.path(ROUT_PATH, "4.2.Generate_gam_plots.R"))
 
-#' @5. Build the model
+#' @4. Build the model
 if (size_class_for_model == "all"){
   if (fad_fsc == F){
     gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + te(scaled_lon, scaled_lat),
@@ -141,6 +136,11 @@ if (size_class_for_model == "all"){
     }
   }
 }
+
+#' @5. Apply a stepAIC to select the most parsimonious model
+gam1 <- stepAIC.gam(gam1, silent = T)
+gam2 <- stepAIC.gam(gam2, silent = T)
+
 
 #' @6. Test spatial autocorrelation on the residuals
 if(check_spatial_autocorr){
