@@ -51,7 +51,7 @@ srcUsedPackages <- c("plyr", "dplyr","tidyr","lubridate","sf", "ggplot2","tibble
 Parallel[1] <- F
 VERBOSE <- F
 
-installAndLoad_packages(srcUsedPackages, loadPackages = TRUE)
+suppressPackageStartupMessages(installAndLoad_packages(srcUsedPackages, loadPackages = TRUE, verbose = VERBOSE))
 
 #' ********************
 #' Init in @for loop:

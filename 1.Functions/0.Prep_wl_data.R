@@ -161,9 +161,13 @@ prep_wl_data <- function(DATA_PATH,
         cl <- makeCluster(ncores)
         doSNOW::registerDoSNOW(cl)
         
-        pb <- txtProgressBar(min = 1, max = dim(sub_data)[1], style = 3)
-        progress <- function(n) setTxtProgressBar(pb, n)
-        opts <- list(progress = progress)
+        if (VERBOSE){
+          pb <- txtProgressBar(min = 1, max = dim(sub_data)[1], style = 3)
+          progress <- function(n) setTxtProgressBar(pb, n)
+          opts <- list(progress = progress)
+        } else {
+          opts <- list()
+        }
         
         data_list[[k]] <- foreach(i = 1:dim(sub_data)[1],
                                   .combine = dplyr::bind_rows,
@@ -203,7 +207,9 @@ prep_wl_data <- function(DATA_PATH,
                           
                         }
         
-        close(pb)
+        if (VERBOSE){
+          close(pb)
+        }
         
         foreach::registerDoSEQ()
         

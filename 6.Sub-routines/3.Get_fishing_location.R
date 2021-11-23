@@ -70,7 +70,7 @@ if (geometry_method == "sampling"){
       st_cast('POINT') %>%
       # keep only one line, randomly
       ddply("fish_identifier", function(x) x[sample.int(x$n_points, 1),],
-            .progress = "text") %>%
+            .progress = ifelse(VERBOSE, "text", "none")) %>%
       # ddply changes the sf data.frame back to a simple data.frame so we change the df back to sf
       st_as_sf() -> data_multi_list[[k]]
   }

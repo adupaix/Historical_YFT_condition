@@ -22,7 +22,7 @@ srcUsedPackages <- c("plyr", "dplyr","tidyr","lubridate","sf", "ggplot2","tibble
 
 if (cluster == F){srcUsedPackages <- c(srcUsedPackages, "gratia", "parallel")} else {Parallel[1] <- F ; VERBOSE <- F}
 
-installAndLoad_packages(srcUsedPackages, loadPackages = TRUE)
+installAndLoad_packages(srcUsedPackages, loadPackages = TRUE, verbose = VERBOSE)
 
 #' **********
 #' Initialize:
