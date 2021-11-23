@@ -1,4 +1,4 @@
-name: r-tuna-condition
+name: /home1/datahome/adupaix/conda/r-tuna-condition
 channels:
   - conda-forge
   - defaults
@@ -135,6 +135,7 @@ dependencies:
   - r-desc=1.4.0=r40hc72bb7e_0
   - r-diffobj=0.3.5=r40hcfec24a_0
   - r-digest=0.6.28=r40h03ef668_0
+  - r-dosnow=1.0.19=r40hc72bb7e_1
   - r-dplyr=1.0.2=r40h0357c0b_0
   - r-e1071=1.7_9=r40h03ef668_0
   - r-ellipsis=0.3.2=r40hcfec24a_0
@@ -227,6 +228,7 @@ dependencies:
   - r-rstudioapi=0.13=r40hc72bb7e_0
   - r-scales=1.1.1=r40hc72bb7e_0
   - r-sf=0.9_5=r40h0fc35ea_2
+  - r-snow=0.4_4=r40hc72bb7e_0
   - r-sp=1.4_6=r40hcfec24a_0
   - r-sparsem=1.81=r40h859d828_0
   - r-spdata=2.0.1=r40hc72bb7e_0
@@ -281,4 +283,4 @@ dependencies:
   - xz=5.2.5=h516909a_1
   - zlib=1.2.11=h36c2ea0_1013
   - zstd=1.4.8=hdf46e1d_0
-prefix: /home/adupaix/anaconda3/envs/r-test
+prefix: /home1/datahome/adupaix/conda/r-tuna-condition
