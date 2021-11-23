@@ -114,8 +114,8 @@ prep_wl_data <- function(DATA_PATH,
     msg <- "  ~~~ Getting geometry information from str: " ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
     if (getgeom == TRUE){
       
-      data %>% mutate(geom_type = str_replace_all(as.character(geometry), "[^[:alpha:]]", ""),
-                      geom_coord = str_replace_all(as.character(geometry), "[[:alpha:]]", "")) -> data
+      data %>% mutate(geom_type = gsub("[^[:alpha:]]", "", as.character(geometry)),
+                      geom_coord = gsub("[[:alpha:]]", "", as.character(geometry))) -> data
       
       sample_size = 1000
       niter <- floor(dim(data)[1]/sample_size) + 1
@@ -151,7 +151,7 @@ prep_wl_data <- function(DATA_PATH,
                                   .combine = dplyr::bind_rows,
                                   .options.snow = opts,
                                   .multicombine = F,
-                                  .packages = c("stringr","sf", "dplyr")) %dopar% {
+                                  .packages = c("sf", "dplyr")) %dopar% {
                           
                           # extract one line of the data
                           data.i <- sub_data[i,]
