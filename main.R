@@ -42,7 +42,7 @@ Parallel = c(F, 1/2),
 #' If RESET is FALSE, try to read the prepped data
 #' else, prep the data in any case
 #' @for_study: set to T
-RESET = F,
+RESET = T,
 
 #' When missing, choose to sample fork length (FL) from fish with the same first dorsal length (FDL)
 #'  or not
@@ -52,7 +52,7 @@ calcfdl = F,
 #' Read the geometry column or not
 #' need to read from the chr column and change it in geometry format
 #' @for_study: set to T
-#' @!! if set to F, the second part of the script won't work (it's a rest from before)
+#' @!! if set to F, the second part of the script won't work (rest from before to delete)
 getgeom = T,
 
 #' Choose the species of interest
@@ -67,7 +67,7 @@ allom = "fromData",
 
 #' Either to perform the Moran's tests (T) or not (F)
 #' @for_study: set to T
-check_spatial_autocorr = F,
+check_spatial_autocorr = T,
 
 #' @Figure_1
 #' size classes for filtering data
@@ -75,13 +75,13 @@ check_spatial_autocorr = F,
 #' @for_study: set to c("<75","75-120",">120")
 # size_classes = c("40-60","<102",">102"),
 # size_classes = c("<75","75-120",">120"),
-size_classes_fig1 = c(),
+size_classes_fig1 = c("<75","75-120",">120"),
 
 #' @GAM
 #' choose if the model is performed on all the individuals
 #' or only on a given size class
 #' @for_study: set to "all"
-size_class_for_model = "<75",
+size_class_for_model = "all",
 
 #' choose how to define the size classes used in the model (in the size_class variable)
 #' @!! the vector has to be in the format c("<x1","x1-x2",...,"x(n-1)-xn",">xn")
@@ -124,7 +124,7 @@ Kn_transformation = T,
 #' or randomly sample a point from the multipoint
 #'    one of "centroid" of "sampling"
 #' @for_study: set to "sampling"
-geometry_method = "centroid",
+geometry_method = "sampling",
 
 #' The limits of the colour scale of
 #' the plot representing the lat-lon smooth
@@ -137,6 +137,7 @@ smooth_col_limits = NULL,
 #' Choose if the GAMs are generated following this script (F)
 #' or if the scripts necessary to generate the GAMs
 #' on a cluster are generated (T)
+#' #' @for_study: set to T
 cluster = T
 
 )
