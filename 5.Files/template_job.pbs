@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -q mpi_4
+#PBS -q mpi_3
 #PBS -l walltime=01:00:00
 # example of using 1node, i.e. 1*28 mpi procs 
 # cd to the directory you submitted your job
@@ -7,7 +7,8 @@ cd $PBS_O_WORKDIR
 rm -rfv *.pbs.o*
 
 # copy the code to scratch
-cp -pr $HOME/Historical_YFT_condition $SCRATCH
+mkdir $SCRATCH/Historical_YFT_condition
+cp -pr $HOME/Historical_YFT_condition/* $SCRATCH/Historical_YFT_condition
 
 # copy the mpi to scratch
 cp -pr $HOME/ichthyop-mpi $SCRATCH
@@ -22,14 +23,14 @@ module load NETCDF
 
 # activate the conda environment
 . /appli/anaconda/latest/etc/profile.d/conda.sh
-conda activate r-tuna_condition
+conda activate r-tuna-condition
 
 # run the data preparation
-Rscript main.R &> out_data_prep.log
+Rscript $SCRATCH/Historical_YFT_condition/main.R &> out_data_prep.log
 
 # run the bootstrap
-time $MPI_LAUNCH -np 112 ichthyop-mpi/ichthyopmpi $SCRATCH/Historical_YFT_condition/commands_bootstrap.txt &> out_bootstrap.log
+time $MPI_LAUNCH -np 84 $SCRATCH/ichthyop-mpi/ichthyopmpi $SCRATCH/Historical_YFT_condition/commands_bootstrap.txt &> out_bootstrap.log
 
 # remove the intermediate files
-rm -rfv all_objects.rds
-rm -rfv commands_bootstrap.txt
+#rm -rfv all_objects.rds
+#rm -rfv commands_bootstrap.txt
