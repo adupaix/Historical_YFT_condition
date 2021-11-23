@@ -26,7 +26,7 @@ PLOT_PATH <- file.path(OUTPUT_PATH, "Plots")
 
 arguments <- list(
 #' @reproductibility
-nb_of_times_to_run = 10, #' @for_study: set to 1000?
+nb_of_times_to_run = 100, #' @for_study: set to 1000?
 SEED = 123456,
 
 #'@arguments:
