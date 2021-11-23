@@ -82,3 +82,68 @@ qqplot.gam <- function(residus){
     ggplot2::stat_qq_line(ggplot2::aes(sample = residus), col = 2)+
     ggplot2::labs(x = "Theoretical quantiles", y = "Sample quantiles")
 }
+
+
+stepAIC.gam <- function(gam, silent = F){
+  
+  k=1
+  l=length(x)
+  
+  while(k <= l){
+    
+    y <- as.character(gam$formula)[2]
+    x <- unlist(strsplit(as.character(gam$formula)[3], " \\+ "))
+    df <- as.character(gam$call)[3]
+    
+    AIC_init <- AIC(gam)
+    
+    formula <- paste("gam(",y,"~",paste(x, collapse = " + "),", data =",df,")")
+    if (silent == F){
+      cat("~~~ Iteration", k, "~~~\n\nInitial model:", formula)
+      cat("\nAIC:", AIC_init, "\n\n")
+    }
+    
+    remove.x <- rep(F, length(x))
+    
+    if (length(x)>1){
+      for (i in 1:length(x)){
+        new_formula <- paste("gam(",y,"~",paste(x[-i], collapse = " + "),", data =",df,")")
+        AIC.i <- eval(parse(text = paste("AIC(",new_formula,")")))
+        
+        if(silent == F){
+          cat(new_formula)
+          cat("\nAIC:", AIC.i, "\n\n")
+        }
+        
+        if (AIC.i < AIC_init){
+          remove.x[i] <- T
+        }
+      }
+    } else {
+      new_formula <- paste("gam(",y,"~ 1, data =",df,")")
+      AIC.i <- eval(parse(text = paste("AIC(",new_formula,")")))
+      
+      if(silent == F){
+        cat(new_formula)
+        cat("\nAIC:", AIC.i, "\n\n")
+      }
+      
+      if (AIC.i < AIC_init){
+        remove.x <- T
+      }
+    }
+    
+    
+    if(any(remove.x)){
+      if(length(x)>1){x <- x[!remove.x]} else {x <- 1}
+      new_formula <- paste("gam(",y,"~",paste(x, collapse = " + "),", data =",df,")")
+      gam <- eval(parse(text = new_formula))
+      k <- k+1
+    } else {
+      k=l+1
+    }
+  }
+  
+  return(gam)
+}
+
