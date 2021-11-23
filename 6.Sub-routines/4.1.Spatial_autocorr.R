@@ -22,7 +22,7 @@ if (part == 1){
   }
   subdata <- data[to_sample,]
   
-  c <- seq(1,10,1)
+  c <- seq(.5,5,.5)
   listw <- list() ; mc <- list() ; test <- list()
   
   for (k in 1:length(c)){
@@ -57,7 +57,7 @@ if (part == 1){
   cat(lines.to.cat)
   msg <- "\n\n~~~~ Performing Moran's I tests on model residuals ~~~~" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
   
-  c <- seq(1,10,1)
+  c <- seq(.5,5,.5)
   mc_gam1 <- list() ; test_gam1 <- list() ; mc_gam2 <- list() ; test_gam2 <- list()
   
   for (k in 1:length(c)){
