@@ -20,7 +20,7 @@ srcUsedPackages <- c("plyr", "dplyr","tidyr","lubridate","sf", "ggplot2","tibble
                      "cowplot","RColorBrewer", "MASS","truncnorm", "mgcv", "spdep",
                      "doSNOW")
 
-if (cluster == F){srcUsedPackages <- c(srcUsedPackages, "gratia", "parallel")} else {Parallel[1] <- F ; VERBOSE <- F}
+if (cluster == F){srcUsedPackages <- c(srcUsedPackages, "gratia", "parallel")} else {Parallel[1] <- F ; VERBOSE <- F ; generate_plots <- F}
 
 installAndLoad_packages(srcUsedPackages, loadPackages = TRUE, verbose = VERBOSE)
 
@@ -43,12 +43,15 @@ source(file.path(FUNC_PATH, "subfunctions.R"))
 
 
 # Initialize names
-try(dir.create(PLOT_PATH, showWarnings = F, recursive = T))
+if (generate_plots){
+  try(dir.create(PLOT_PATH, showWarnings = F, recursive = T))
+  
+  fitName <- file.path(PLOT_PATH, "fit_lnorm_dates_goodnessoffit.png")
+  histFitName <- file.path(PLOT_PATH, "fit_lnorm_dates.png")
+  fig1Name <- file.path(PLOT_PATH, "Figure1.png")
+  fig2Name <- file.path(PLOT_PATH, "Figure2.png")
+}
 
-fitName <- file.path(PLOT_PATH, "fit_lnorm_dates_goodnessoffit.png")
-histFitName <- file.path(PLOT_PATH, "fit_lnorm_dates.png")
-fig1Name <- file.path(PLOT_PATH, "Figure1.png")
-fig2Name <- file.path(PLOT_PATH, "Figure2.png")
 
 readName <- file.path(OUTPUT_PATH, "README.txt")
 

@@ -82,23 +82,25 @@ if (deduce_date & cluster == F){
   fit_lnorm = fitdistrplus::fitdist(data_dates$t_fishing_sampling, "lnorm")
   
   # plot informations on the fit and save the plots
-  png(fitName)
-  plot(fit_lnorm)
-  dev.off()
-  
-  fit_plot <- ggplot()+
-    geom_histogram(data = data_dates,
-                   aes(x=t_fishing_sampling,
-                       y=..density..),
-                   color = NA,
-                   fill = "red",
-                   alpha = 0.5,
-                   binwidth = 1)+
-    stat_function(fun = dlnorm, args = fit_lnorm$estimate, color = "red")+
-    xlab("Time between fishing and sampling (days)")+
-    ylab("Fraction of entries in the dataset")
-  
-  ggsave(histFitName, fit_plot)
+  if (generate_plots){
+    png(fitName)
+    plot(fit_lnorm)
+    dev.off()
+    
+    fit_plot <- ggplot()+
+      geom_histogram(data = data_dates,
+                     aes(x=t_fishing_sampling,
+                         y=..density..),
+                     color = NA,
+                     fill = "red",
+                     alpha = 0.5,
+                     binwidth = 1)+
+      stat_function(fun = dlnorm, args = fit_lnorm$estimate, color = "red")+
+      xlab("Time between fishing and sampling (days)")+
+      ylab("Fraction of entries in the dataset")
+    
+    ggsave(histFitName, fit_plot)
+  }
   
   # for data with missing fishing dates, deduce a fishing date using the above fit
   data_no_dates %>%

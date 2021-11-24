@@ -10,6 +10,10 @@
 
 
 if (part == 1){
+  
+  #'********************
+  #' Plots of Kn values
+  #'********************
   #' @months (pas utilise dans le model)
   p <- ggplot() +
     geom_boxplot(data=data, aes(x=fishing_month, y = Kn))+
@@ -68,7 +72,9 @@ if (part == 1){
   saveRDS(gam1, gamteSummary)
   # saveRDS(gam2, gamsSummary)
   
-  
+  #'****************************************
+  #' Plots of the GAM latlong smooth term
+  #'****************************************
   #' @save plots of the coefficients of the gams
   countries <- map_data("world")
   

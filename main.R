@@ -143,8 +143,14 @@ smooth_col_limits = NULL,
 #' or if the scripts necessary to generate the GAMs
 #' on a cluster are generated (T)
 #' #' @for_study: set to T
-cluster = T
+cluster = T,
 
+#' Choose if plots are generated or not
+#' if (F), the script only performs the model
+#' without building figure or coefficient plots
+#' @for_study: set to F
+#' @! if cluster==T, generate_plots is automatically set to F
+generate_plots = F
 )
 
 
@@ -215,7 +221,9 @@ if(deduce_date == F){
 #' ********************
 #' Generate Figures:
 #' ********************
-source(file.path(ROUT_PATH, "1.Generate_figures.R"))
+if (!generate_plots){
+  source(file.path(ROUT_PATH, "1.Generate_figures.R"))
+}
 
 
 

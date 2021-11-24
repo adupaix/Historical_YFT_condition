@@ -90,7 +90,9 @@ if (check_spatial_autocorr){
 
 
 #' @3. Visualisation données
-part = 1 ; source(file.path(ROUT_PATH, "4.2.Generate_gam_plots.R"))
+if (generate_plots){
+  part = 1 ; source(file.path(ROUT_PATH, "4.2.Generate_gam_plots.R"))
+}
 
 #' @4. Build the model
 if (size_class_for_model == "all"){
@@ -148,4 +150,6 @@ if(check_spatial_autocorr){
 }
 
 #' @7. Generate the plots associated with the GAMs
-part = 2 ; source(file.path(ROUT_PATH, "4.2.Generate_gam_plots.R"))
+if (generate_plots){
+  part = 2 ; source(file.path(ROUT_PATH, "4.2.Generate_gam_plots.R"))
+}

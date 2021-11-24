@@ -17,24 +17,27 @@ if (VERBOSE){
 }
 
 # Initialize names
-try(dir.create(file.path(OUTPUT_PATH, seed.i, "Plots"), showWarnings = F, recursive = T))
-diagnoPlotNames <- c(file.path(OUTPUT_PATH, seed.i, "diagn_gam_te.png"),
-                     file.path(OUTPUT_PATH, seed.i, "diagn_gam_s.png"))
-moranPlotName <- file.path(OUTPUT_PATH, seed.i, "Moran_I_plot.png")
+if (generate_plots){
+  try(dir.create(file.path(OUTPUT_PATH, seed.i, "Plots"), showWarnings = F, recursive = T))
+  diagnoPlotNames <- c(file.path(OUTPUT_PATH, seed.i, "diagn_gam_te.png"),
+                       file.path(OUTPUT_PATH, seed.i, "diagn_gam_s.png"))
+  moranPlotName <- file.path(OUTPUT_PATH, seed.i, "Moran_I_plot.png")
+  smoothPlotNames <- c(file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_s.png"),
+                       file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_s_withpoints.png"),
+                       file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_te.png"),
+                       file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_te_withpoints.png"))
+  gamCoeffPlotNames <- c(file.path(OUTPUT_PATH, seed.i, "gam_coeff_year.png"),
+                         file.path(OUTPUT_PATH, seed.i, "gam_coeff_quarter.png"),
+                         file.path(OUTPUT_PATH, seed.i, "gam_coeff_size_class.png"),
+                         file.path(OUTPUT_PATH, seed.i, "gam_coeff_fishing_mode.png"))
+  vars <- c("month", "quarter", "lonlat", "lon", "lat")
+  plotsNames <- file.path(OUTPUT_PATH, seed.i, "Plots", paste0("Kn_f-", vars, ".png"))
+}
+
 gamteSummary <- file.path(OUTPUT_PATH, seed.i, "gam_te.rds")
 gamsSummary <- file.path(OUTPUT_PATH, seed.i, "gam_s.rds")
-smoothPlotNames <- c(file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_s.png"),
-                     file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_s_withpoints.png"),
-                     file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_te.png"),
-                     file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_te_withpoints.png"))
-gamCoeffPlotNames <- c(file.path(OUTPUT_PATH, seed.i, "gam_coeff_year.png"),
-                       file.path(OUTPUT_PATH, seed.i, "gam_coeff_quarter.png"),
-                       file.path(OUTPUT_PATH, seed.i, "gam_coeff_size_class.png"),
-                       file.path(OUTPUT_PATH, seed.i, "gam_coeff_fishing_mode.png"))
 summaryName <- file.path(OUTPUT_PATH, seed.i, "Processing_summary.txt")
 
-vars <- c("month", "quarter", "lonlat", "lon", "lat")
-plotsNames <- file.path(OUTPUT_PATH, seed.i, "Plots", paste0("Kn_f-", vars, ".png"))
 
 # Initialize data processing summary and generate README.txt
 sink(summaryName)
