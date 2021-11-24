@@ -19,10 +19,8 @@ if (VERBOSE){
 # Initialize names
 if (generate_plots){
   try(dir.create(file.path(OUTPUT_PATH, seed.i, "Plots"), showWarnings = F, recursive = T))
-  smoothPlotNames <- c(file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_s.png"),
-                       file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_s_withpoints.png"),
-                       file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_te.png"),
-                       file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_te_withpoints.png"))
+  smoothPlotNames <- c(file.path(OUTPUT_PATH, seed.i, "Smooth_latlon.png"),
+                       file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_withpoints.png"))
   gamCoeffPlotNames <- c(file.path(OUTPUT_PATH, seed.i, "gam_coeff_year.png"),
                          file.path(OUTPUT_PATH, seed.i, "gam_coeff_quarter.png"),
                          file.path(OUTPUT_PATH, seed.i, "gam_coeff_size_class.png"),
@@ -31,12 +29,10 @@ if (generate_plots){
   plotsNames <- file.path(OUTPUT_PATH, seed.i, "Plots", paste0("Kn_f-", vars, ".png"))
 }
 
-diagnoPlotNames <- c(file.path(OUTPUT_PATH, seed.i, "diagn_gam_te.png"),
-                     file.path(OUTPUT_PATH, seed.i, "diagn_gam_s.png"))
+diagnoPlotNames <- file.path(OUTPUT_PATH, seed.i, "diagn_gam.png")
 moranPlotName <- file.path(OUTPUT_PATH, seed.i, "Moran_I_plot.png")
 
-gamteSummary <- file.path(OUTPUT_PATH, seed.i, "gam_te.rds")
-gamsSummary <- file.path(OUTPUT_PATH, seed.i, "gam_s.rds")
+gamSummary <- file.path(OUTPUT_PATH, seed.i, "gam.rds")
 summaryName <- file.path(OUTPUT_PATH, seed.i, "Processing_summary.txt")
 
 

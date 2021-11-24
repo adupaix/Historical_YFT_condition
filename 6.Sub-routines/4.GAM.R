@@ -97,42 +97,28 @@ if (generate_plots){
 #' @4. Build the model
 if (size_class_for_model == "all"){
   if (fad_fsc == F){
-    # gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + te(scaled_lon, scaled_lat),
-    #                   data = data)
-    
     gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + s(scaled_lon, scaled_lat),
                       data = data)
     
   } else {
     if (fishing_mode_for_model == "all"){
-      # gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + fishing_mode + te(scaled_lon, scaled_lat),
-      #                   data = data)
       gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + fishing_mode + s(scaled_lon, scaled_lat),
                         data = data)
     } else {
-      # gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + te(scaled_lon, scaled_lat),
-      #                   data = data)
       gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + s(scaled_lon, scaled_lat),
                         data = data)
     }
   }
 } else {
   if (fad_fsc == F){
-    # gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + te(scaled_lon, scaled_lat),
-    #                   data = data)
-    
     gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + s(scaled_lon, scaled_lat),
                       data = data)
     
   } else {
     if (fishing_mode_for_model == "all"){
-      # gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + fishing_mode + te(scaled_lon, scaled_lat),
-      #                   data = data)
       gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + fishing_mode + s(scaled_lon, scaled_lat),
                         data = data)
     } else {
-      # gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + te(scaled_lon, scaled_lat),
-      #                   data = data)
       gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + s(scaled_lon, scaled_lat),
                         data = data)
     }
@@ -150,7 +136,7 @@ if(check_spatial_autocorr){
 }
 
 #' @7. Save the GAM
-saveRDS(gam1, gamteSummary)
+saveRDS(gam1, gamSummary)
 
 #' @8. Generate the plots associated with the GAMs
 part = 2 ; source(file.path(ROUT_PATH, "4.2.Generate_gam_plots.R"))

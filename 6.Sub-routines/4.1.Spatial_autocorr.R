@@ -5,13 +5,13 @@
 #'#*******************************************************************************************************************
 #'@description :  Routine to test the spatial autocorrelation of the data and of the model residuals
 #'#*******************************************************************************************************************
-#'@revisions
+#'@revisions 2021-11-23: tested distances to consider 2 points as "linked" changed from 100-1000km to 100-500km
 #'#*******************************************************************************************************************
 
 
 if (part == 1){
   
-  #' Test spatial autocorrelation on the variable
+  #' @1. Test spatial autocorrelation on the variable
   
   if (VERBOSE){
     msg <- "\n\n~~~~ Performing Moran's I test on Kn ~~~~" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
@@ -19,7 +19,6 @@ if (part == 1){
   
   if (size_class_for_model == "all"){
     to_sample <- sample.int(dim(data)[1], size = 2000)
-    # to_sample <- 1:(dim(data)[1])
   } else {
     to_sample <- 1:(dim(data)[1])
   }
@@ -56,12 +55,12 @@ if (part == 1){
   
   toplot <- data.frame(d = rep(c, 2),
                        I = c(morans.mc, morans.test),
-                       moran_type = c(rep("mc",length(c)),
-                                      rep("test",length(c))))
+                       moran_type = c(rep("Kn mc",length(c)),
+                                      rep("Kn test",length(c))))
   
 } else if (part == 2){
   
-  #' Test spatial autocorrelation on the residuals
+  #' @2.1 Test spatial autocorrelation on the residuals
   if (VERBOSE){
     cat(lines.to.cat)
     msg <- "\n\n~~~~ Performing Moran's I tests on model residuals ~~~~" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
@@ -69,7 +68,6 @@ if (part == 1){
   
   c <- seq(1,5,.5)
   mc_gam1 <- list() ; test_gam1 <- list()
-  # mc_gam2 <- list() ; test_gam2 <- list()
   
   for (k in 1:length(c)){
     if (VERBOSE){
@@ -79,52 +77,29 @@ if (part == 1){
     }
     mc_gam1[[k]] <- moran.mc(resid(gam1)[to_sample], listw = listw[[k]], nsim = 99, zero.policy = T)
     test_gam1[[k]] <- moran.test(resid(gam1)[to_sample], listw = listw[[k]], zero.policy = T) 
-    # mc_gam2[[k]] <- moran.mc(resid(gam2)[to_sample], listw = listw[[k]], nsim = 99, zero.policy = T)
-    # test_gam2[[k]] <- moran.test(resid(gam2)[to_sample], listw = listw[[k]], zero.policy = T) 
     
   }
   
   morans.mc.res <- unlist(lapply(mc_gam1, function(x) x$statistic))
   morans.test.res <- unlist(lapply(test_gam1, function(x) x$estimate[1]))
-  # morans.mc.res.gam2 <- unlist(lapply(mc_gam2, function(x) x$statistic))
-  # morans.test.res.gam2 <- unlist(lapply(test_gam2, function(x) x$estimate[1]))
   
-  # toplot2 <- data.frame(d = rep(c, 4),
-  #                       I = c(morans.mc.res.gam1, morans.test.res.gam1, morans.mc.res.gam2, morans.test.res.gam2),
-  #                       moran_type = c(rep("mc_res_gam1",length(c)),
-  #                                      rep("test_res_gam1",length(c)),
-  #                                      rep("mc_res_gam2",length(c)),
-  #                                      rep("test_res_gam2",length(c))))
+  #' @2.2 Generate plot
   toplot2 <- data.frame(d = rep(c, 2),
                         I = c(morans.mc.res, morans.test.res),
-                        moran_type = c(rep("mc_res_gam",length(c)),
-                                       rep("test_res_gam",length(c))))
+                        moran_type = c(rep("GAM residuals mc",length(c)),
+                                       rep("GAM residuals test",length(c))))
   
   bind_rows(toplot, toplot2) -> toplot
   
-  
-  # p_moran_residuals <- ggplot(data = toplot, aes(x=d*100, y=I, group = moran_type, color = moran_type)) + 
-  #   geom_point()+ geom_line()+
-  #   scale_color_discrete("Moran's\nfunction")+
-  #   xlab("Distance (km)")+
-  #   ylab("Moran's I")
-  
-  # toplot <- toplot[grep("test", toplot$moran_type),]
-  toplot$moran_type <- gsub(pattern = "test$", "Kn test", toplot$moran_type)
-  toplot$moran_type <- gsub(pattern = "mc$", "Kn mc", toplot$moran_type)
-  toplot$moran_type <- gsub(pattern = "test_res_gam", "GAM residuals test", toplot$moran_type)
-  toplot$moran_type <- gsub(pattern = "mc_res_gam", "GAM residuals mc", toplot$moran_type)
-  
-  p_moran_residuals2 <- ggplot(data = toplot, aes(x=d*100, y=I, group = moran_type, color = moran_type)) + 
+  p_moran_residuals <- ggplot(data = toplot, aes(x=d*100, y=I, group = moran_type, color = moran_type)) + 
     geom_point()+ geom_line()+
     scale_color_discrete("Data used to\n calculate Moran's I")+
     xlab("Distance (km)")+
     ylab("Moran's I")
   
-  ggsave(moranPlotName, p_moran_residuals2)
+  ggsave(moranPlotName, p_moran_residuals)
   
   rm(mc, test, nb_list, listw, part) ; invisible(gc())
-  
   
 }
 
