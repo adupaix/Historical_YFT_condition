@@ -29,6 +29,7 @@ if (generate_plots){
   plotsNames <- file.path(OUTPUT_PATH, seed.i, "Plots", paste0("Kn_f-", vars, ".png"))
 }
 
+try(dir.create(file.path(OUTPUT_PATH, seed.i), showWarnings = F, recursive = T))
 diagnoPlotNames <- file.path(OUTPUT_PATH, seed.i, "diagn_gam.png")
 moranPlotName <- file.path(OUTPUT_PATH, seed.i, "Moran_I_plot.png")
 

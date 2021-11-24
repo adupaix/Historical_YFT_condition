@@ -223,7 +223,7 @@ if(deduce_date == F){
 #' ********************
 #' Generate Figures:
 #' ********************
-if (!generate_plots){
+if (generate_plots){
   source(file.path(ROUT_PATH, "1.Generate_figures.R"))
 }
 
