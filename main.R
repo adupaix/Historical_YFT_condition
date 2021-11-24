@@ -148,6 +148,8 @@ cluster = T,
 #' Choose if plots are generated or not
 #' if (F), the script only performs the model
 #' without building figure or coefficient plots
+#' However, even if (F) the script generates the
+#' diagnostic plots
 #' @for_study: set to F
 #' @! if cluster==T, generate_plots is automatically set to F
 generate_plots = F

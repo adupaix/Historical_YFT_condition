@@ -19,9 +19,6 @@ if (VERBOSE){
 # Initialize names
 if (generate_plots){
   try(dir.create(file.path(OUTPUT_PATH, seed.i, "Plots"), showWarnings = F, recursive = T))
-  diagnoPlotNames <- c(file.path(OUTPUT_PATH, seed.i, "diagn_gam_te.png"),
-                       file.path(OUTPUT_PATH, seed.i, "diagn_gam_s.png"))
-  moranPlotName <- file.path(OUTPUT_PATH, seed.i, "Moran_I_plot.png")
   smoothPlotNames <- c(file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_s.png"),
                        file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_s_withpoints.png"),
                        file.path(OUTPUT_PATH, seed.i, "Smooth_latlon_te.png"),
@@ -33,6 +30,10 @@ if (generate_plots){
   vars <- c("month", "quarter", "lonlat", "lon", "lat")
   plotsNames <- file.path(OUTPUT_PATH, seed.i, "Plots", paste0("Kn_f-", vars, ".png"))
 }
+
+diagnoPlotNames <- c(file.path(OUTPUT_PATH, seed.i, "diagn_gam_te.png"),
+                     file.path(OUTPUT_PATH, seed.i, "diagn_gam_s.png"))
+moranPlotName <- file.path(OUTPUT_PATH, seed.i, "Moran_I_plot.png")
 
 gamteSummary <- file.path(OUTPUT_PATH, seed.i, "gam_te.rds")
 gamsSummary <- file.path(OUTPUT_PATH, seed.i, "gam_s.rds")

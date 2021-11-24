@@ -149,7 +149,9 @@ if(check_spatial_autocorr){
   part = 2 ; source(file.path(ROUT_PATH, "4.1.Spatial_autocorr.R"))
 }
 
-#' @7. Generate the plots associated with the GAMs
-if (generate_plots){
-  part = 2 ; source(file.path(ROUT_PATH, "4.2.Generate_gam_plots.R"))
-}
+#' @7. Save the GAM
+saveRDS(gam1, gamteSummary)
+
+#' @8. Generate the plots associated with the GAMs
+part = 2 ; source(file.path(ROUT_PATH, "4.2.Generate_gam_plots.R"))
+
