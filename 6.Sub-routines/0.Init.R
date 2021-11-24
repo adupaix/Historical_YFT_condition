@@ -52,7 +52,7 @@ if (generate_plots){
   fig2Name <- file.path(PLOT_PATH, "Figure2.png")
 }
 
-
+try(dir.create(OUTPUT_PATH, showWarnings = F, recursive = T))
 readName <- file.path(OUTPUT_PATH, "README.txt")
 
 summaryName <- file.path(OUTPUT_PATH, "Processing_summary.txt")
