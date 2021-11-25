@@ -29,6 +29,11 @@ N2 <- dim(data_interval_dates)[1]
 data %>% filter(is.na(fishing_date) & is.na(fishing_date_min) & is.na(fishing_date_max)) %>%
   # keep in a variable if the fishing date was the real one or not
   mutate(fishing_date_origin = "deduced") -> data_no_dates
+#' @remark: this data.frame (data_no_dates) should be empty, because when the fishing date interval
+#'          is absent, it means the fishing trip could not be deduced, hence the geometry is also
+#'          empty (neither a POINT nor a MULTIPOINT)
+#'          But just in case, I leave it...
+
 
 #' sometimes, the fish can be sampled onboard directly
 #' hence, we consider that there s an error only if
@@ -128,14 +133,17 @@ if (deduce_date & cluster == F){
 
 data %>%
   mutate(fishing_year = year(fishing_date),
-         fishing_month = month(fishing_date),
-         fishing_quarter = quarter(fishing_date, fiscal_start = 12)) -> data
+         fishing_month = as.factor(month(fishing_date)),
+         fishing_quarter = as.factor(quarter(fishing_date, fiscal_start = 12))) -> data
+
 N3 <- dim(data)[1]
 
-#' @!! keep only data before 2020
-#' sampling on YFT in 2020 was performed in January on tuna fished in Nov or Dec 2019
+#' Last @filter
+#' Keep only data before 2020
+#'     sampling on YFT in 2020 was mainly performed in January on tuna fished in Nov or Dec 2019
 data %>%
-  filter(fishing_year < 2020) -> data
+  filter(fishing_year < 2020) %>%
+  mutate(fishing_year = as.factor(fishing_year)) -> data
 
 sink(summaryName, append = T)
 cat("\n\n\nDates filter")
