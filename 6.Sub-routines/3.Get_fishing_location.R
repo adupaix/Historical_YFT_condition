@@ -60,7 +60,7 @@ if (geometry_method == "sampling"){
     }
     
     if(k == niter){
-      indexes <- ((k-1)*sample_size+1):(dim(data)[1])
+      indexes <- ((k-1)*sample_size+1):(dim(data_multi)[1])
     } else {
       indexes <- ((k-1)*sample_size+1):(k*sample_size)
     }
@@ -99,7 +99,8 @@ N1 <- dim(data)[1]
 
 data %>% mutate(lon = coordinates$X,
                 lat = coordinates$Y) %>%
-  filter(!is.na(lon) & !is.na(lat)) -> data
+  mutate(scaled_lon = scale(lon, scale = T, center = T), 
+         scaled_lat = scale(lat, scale = T, center = T)) -> data
 
 N2 <- dim(data)[1]
 Nna <- N1 - N2 ; rm(N1, N2)
