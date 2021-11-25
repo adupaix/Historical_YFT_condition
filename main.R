@@ -41,6 +41,7 @@ SEED = 123456,
 #'    If F, runs in sequential
 #'    if T, runs in parallel
 #' Second element of the vector: fraction of the cores to be used
+#' @! if cluster==T, Parallel[1] is automatically set to F
 Parallel = c(F, 1/2),
 
 #' If RESET is FALSE, try to read the prepped data
@@ -53,16 +54,10 @@ RESET = T,
 #' @! if cluster==T, VERBOSE is automatically set to F
 VERBOSE = T,
 
-#' When missing, choose to sample fork length (FL) from fish with the same first dorsal length (FDL)
-#'  or not
+#' When missing, (T) choose to sample fork length (FL) from fish with the same first dorsal length (FDL)
+#'  (F) or not
 #'  @for_study: set to F
 calcfdl = F,
-
-#' Read the geometry column or not
-#' need to read from the chr column and change it in geometry format
-#' @for_study: set to T
-#' @!! if set to F, the second part of the script won't work (rest from before to delete)
-getgeom = T,
 
 #' Choose the species of interest
 #' one of YFT, BET, or SKJ
@@ -186,7 +181,7 @@ rm(data1, data2)
 #' Prep data:
 #' **********
 #' @filter measured FL, measured W, fish caught in the IO
-data <- prep_wl_data(DATA_PATH, data, calcfdl = calcfdl, read = !RESET, getgeom = getgeom, ncores = nb_cores,
+data <- prep_wl_data(DATA_PATH, data, calcfdl = calcfdl, read = !RESET, getgeom = T, ncores = nb_cores,
                      size_class_levels = size_class_levels, summaryName = summaryName, verbose = VERBOSE)
 
 #' ***************

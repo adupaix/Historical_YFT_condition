@@ -13,7 +13,7 @@ prep_wl_data <- function(DATA_PATH,
                          calcfdl = TRUE,
                          calcfdl.sd_max = 5, calcfdl.spl_size = 100,
                          read = TRUE,
-                         getgeom = FALSE,
+                         getgeom = TRUE, # rest from before, in this study getgeom is always set to T
                          ncores = 1,
                          size_class_levels,
                          summaryName,
@@ -129,7 +129,7 @@ prep_wl_data <- function(DATA_PATH,
       msg <- paste("~~~ Sampling missing FL values among other individuals with the same FDL: ",calcfdl,"\n") ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
     }
     
-    if (calcfdl == TRUE){
+    if (calcfdl){
       data <- calc_FL_from_FDL(data, sd_max = calcfdl.sd_max, spl_size_min = calcfdl.spl_size, verbose = verbose)
     } else{
       if (verbose){
@@ -144,7 +144,7 @@ prep_wl_data <- function(DATA_PATH,
       msg <- "  ~~~ Getting geometry information from str: " ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
     }
     
-    if (getgeom == TRUE){
+    if (getgeom){
       
       data %>% mutate(geom_type = gsub("[^[:alpha:]]", "", as.character(geometry)),
                       geom_coord = gsub("[[:alpha:]]", "", as.character(geometry))) -> data
