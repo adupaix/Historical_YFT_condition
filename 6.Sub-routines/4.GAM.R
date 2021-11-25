@@ -8,7 +8,7 @@
 #'@revisions
 #'#*******************************************************************************************************************
 
-#' If size_class_for_model != 'all', subsample the data to keep only one size class
+#' @1. If size_class_for_model != 'all', subsample the data to keep only one size class
 if (size_class_for_model != 'all'){
   
   if (size_class_for_model %in% size_classes_fig1){
@@ -33,7 +33,7 @@ if (size_class_for_model != 'all'){
   }
 }
 
-#' @1. Scale quantitative variables + scale and center geographical variables
+#' @2. Scale quantitative variables + scale and center geographical variables
 #' + filter data according to the provided arguments
 if (year_by_groups){
   ref <- (min(data$fishing_year)-5):(max(data$fishing_year)+5)
@@ -43,25 +43,6 @@ if (year_by_groups){
   
   data$fishing_year <- mapply(f, data$fishing_year, MoreArgs = list(ref = ref))
 }
-
-data$size_class <- NA
-for (k in 1:length(size_class_levels)){
-  if (k == 1){
-    data$size_class[which(data$fork_length <= as.numeric(sub("<", "", size_class_levels[k])))] <- size_class_levels[k]
-  } else if (k == length(size_class_levels)){
-    data$size_class[which(data$fork_length > as.numeric(sub(">", "", size_class_levels[k])))] <- size_class_levels[k]
-  } else {
-    data$size_class[which(data$fork_length > as.numeric(sub("-.*", "", size_class_levels[k])) &
-                            data$fork_length <= as.numeric(sub(".*-", "", size_class_levels[k])))] <- size_class_levels[k]
-  }
-}
-
-data %>% mutate(scaled_lon = scale(lon, scale = T, center = T),
-                scaled_lat = scale(lat, scale = T, center = T),
-                fishing_month = as.factor(fishing_month),
-                fishing_quarter = as.factor(fishing_quarter),
-                fishing_year = as.factor(fishing_year),
-                size_class = as.factor(size_class)) -> data
 
 if (fad_fsc == T){
   data %>% dplyr::filter(fishing_mode %in% c("DFAD","FSC")) %>%
