@@ -53,6 +53,8 @@ if (generate_plots){
 }
 
 try(dir.create(OUTPUT_PATH, showWarnings = F, recursive = T))
+intermediateDataName <- file.path(OUTPUT_PATH, "df_intermediate.rds")
+dfGeneralName <- file.path(OUTPUT_PATH, "df_filtered.rds")
 readName <- file.path(OUTPUT_PATH, "README.txt")
 
 summaryName <- file.path(OUTPUT_PATH, "Processing_summary.txt")
