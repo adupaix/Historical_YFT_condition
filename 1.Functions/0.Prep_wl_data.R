@@ -15,6 +15,7 @@ prep_wl_data <- function(DATA_PATH,
                          read = TRUE,
                          getgeom = FALSE,
                          ncores = 1,
+                         size_class_levels,
                          summaryName,
                          verbose = F){
   
@@ -24,17 +25,18 @@ prep_wl_data <- function(DATA_PATH,
   
   preped_file <- file.path(DATA_PATH,"preped_wl_data")
   
-  if (calcfdl == TRUE){
+  if (calcfdl){
     preped_file <- paste0(preped_file, "_calcfdl")
   }
-  if (getgeom == T){
+  if (getgeom){
     preped_file <- paste0(preped_file, "_geom")
   }
+  preped_file <- paste0(preped_file, "_sc", paste(size_class_levels, collapse = "."))
   
   preped_file <- paste0(preped_file, ".rds")
   
   
-  if (file.exists(preped_file) & read == TRUE){
+  if (file.exists(preped_file) & read){
     if (verbose){
       msg <- paste("  ~~~ Reading prepared data file from ",preped_file,"\n") ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
     }
@@ -92,7 +94,21 @@ prep_wl_data <- function(DATA_PATH,
       dplyr::filter(!is.na(fork_length) | !is.na(total_length) | !is.na(first_dorsal_length)) %>%
       # add a column to follow where the fork length comes from
       mutate(fl_origin = as.factor(ifelse(!is.na(fork_length), "measured", "deduced"))) -> data
-
+    
+    # add a column containing the size_class
+    data$size_class <- NA
+    for (k in 1:length(size_class_levels)){
+      if (k == 1){
+        data$size_class[which(data$fork_length <= as.numeric(sub("<", "", size_class_levels[k])))] <- size_class_levels[k]
+      } else if (k == length(size_class_levels)){
+        data$size_class[which(data$fork_length > as.numeric(sub(">", "", size_class_levels[k])))] <- size_class_levels[k]
+      } else {
+        data$size_class[which(data$fork_length > as.numeric(sub("-.*", "", size_class_levels[k])) &
+                                data$fork_length <= as.numeric(sub(".*-", "", size_class_levels[k])))] <- size_class_levels[k]
+      }
+    }
+    data$size_class <- as.factor(data$size_class)
+    
     N2 <- dim(data)[1]
     if (verbose){
       msg <- "    - Deleted data with no length measurement\n" ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
