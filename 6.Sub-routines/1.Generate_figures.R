@@ -19,13 +19,27 @@ if (VERBOSE){
   msg <- "\n\n~~~~ Generating Figure 1 ~~~~\n" ; lines.to.cat <- c(lines.to.cat, msg) ; cat(lines.to.cat)
 }
 
+#' @filter "non duplicated" line:
+#'          concerns ~ 400 entries in the YFT data, 156 fish
+#'          some rows are duplicated with only the geometry (POINT)
+#'          differing
+#' @!! in this subroutine, work on "data_fig" not on "data" (only the first of the
+#' duplicated rows is kept, as the geographical data is not used)
+#' This filter will be applied again on "data" but applying the geometry_method
+#'  in sub-routine 3.Get_fishing_location
+data %>% filter(!duplicated(fish_identifier)) -> data_fig
+
+#' @save the data.frame used for the figure 1 (general data.frame)
+saveRDS(data_fig, dfGeneralName)
+
+
 data_byclass <- list()
 spl_sizes <- list()
 toplot <- list()
 
-data_byclass[[1]] <- data
+data_byclass[[1]] <- data_fig
 
-data %>% ddply(.variables = "fishing_year", summarise, n=n()) %>%
+data_fig %>% ddply(.variables = "fishing_year", summarise, n=n()) %>%
   filter(n > 50) -> spl_sizes[[1]]
 
 ddply(data_byclass[[1]], .variables = "fishing_year", summarise, sd = sd(Kn), m = mean(Kn), n = n()) %>%
@@ -46,13 +60,13 @@ if (length(size_classes_fig1 != 0)){
       l2 <- as.numeric(sub("<", "", size_classes_fig1[k]))
     }
     
-    data %>% filter(fork_length >= l1 & fork_length <= l2 ) %>%
+    data_fig %>% filter(fork_length >= l1 & fork_length <= l2 ) %>%
       ddply(.variables = "fishing_year", summarise, n=n()) %>%
       filter(n > 50) -> spl_sizes[[k+1]]
     
     y_of_int <- spl_sizes[[k+1]]$fishing_year
     
-    data %>%
+    data_fig %>%
       filter(fishing_year %in% y_of_int & fork_length >= l1 & fork_length <= l2) -> data_byclass[[k+1]]
     
     ddply(data_byclass[[k+1]], .variables = "fishing_year", summarise, sd = sd(Kn), m = mean(Kn), n = n()) %>%
@@ -111,7 +125,7 @@ if (fishing_mode_for_model == "all"){
     msg <- "\n\n~~~~ Generating Figure 2 ~~~~\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
   }
   
-  p3 <- figure2(data = data,
+  p3 <- figure2(data = data_fig,
                 var.to.compare = "Kn",
                 var.grp = "fishing_mode",
                 levels.var.grp = c("DFAD","FSC"),
