@@ -5,7 +5,11 @@
 #'#*******************************************************************************************************************
 #'@description :  Main script to determine if the YFT condition factor (Kn) has been impacted by the introduction of
 #' FADs in the Indian Ocean.
+#'#*******************************************************************************************************************
+#' @tags:
 #' the @for_study tag is used before each argument, to specify which arguments were used to obtain the study results
+#' the @filter tag is used to make explicit where the different filters are applied (not perfectly in agreement with
+#'             the names of the sub-routines)
 #'#*******************************************************************************************************************
 #'@revisions
 #'#*******************************************************************************************************************
@@ -181,8 +185,9 @@ rm(data1, data2)
 #' **********
 #' Prep data:
 #' **********
+#' @filter measured FL, measured W, fish caught in the IO
 data <- prep_wl_data(DATA_PATH, data, calcfdl = calcfdl, read = !RESET, getgeom = getgeom, ncores = nb_cores,
-                     summaryName = summaryName, verbose = VERBOSE)
+                     size_class_levels = size_class_levels, summaryName = summaryName, verbose = VERBOSE)
 
 #' ***************
 #' Calculate Kn:
@@ -192,6 +197,7 @@ if (VERBOSE){
   msg <- "\n\n~~~~ Calculating Kn ~~~~\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
 }
 
+#' @filter species of interest, caught by purse seiner
 data %>% filter(species_code_fao %in% species & gear_code == "PS") -> data
 
 if (allom == "Chassot2015"){
@@ -212,10 +218,22 @@ cat("\n------------------------\n")
 cat(paste0("\n    - Number of entries after gear filter + species filter (", species, "): ", dim(data)[1]))
 sink()
 
+#' @filter fishing location not missing
+#' Keep only the data entries for which any type of geometry is available (POINT or MULTIPOINT)
+data %>% filter(!st_is_empty(data$geometry)) -> data
+
+sink(summaryName, append = T)
+cat("\n\n\nMissing location filter")
+cat("\n-----------------------\n")
+cat(paste0("\n    - Number of entries after missing location filter: ", dim(data)[1]))
+sink()
+
 #' ********************
 #' Get fishing date:
 #' ********************
 #' at that point if the entries with missing dates are discarded
+#' @filter known fishing date interval, no error in date,
+#'         fish caught prior to 2020
 if(deduce_date == F){
   source(file.path(ROUT_PATH, "2.Calc_fishing_date.R"))
 }
@@ -223,6 +241,14 @@ if(deduce_date == F){
 #' ********************
 #' Generate Figures:
 #' ********************
+#' @filter "non duplicated" line:
+#'          concerns ~ 400 entries in the YFT data, 156 fish
+#'          some rows are duplicated with only the geometry (POINT)
+#'          differing
+#' @!! in this subroutine, work on "data_fig" not on "data" (only the first of the
+#' duplicated rows is kept, as the geographical data is not used)
+#' This filter will be applied again on "data" but applying the geometry_method
+#'  in sub-routine 3.Get_fishing_location
 if (generate_plots){
   source(file.path(ROUT_PATH, "1.Generate_figures.R"))
 }
@@ -231,7 +257,7 @@ if (generate_plots){
 
 if (cluster == T){
   #' ******************************
-  #' Generate script for datarmor
+  #' Prepare for datarmor script
   #' ******************************
   # save all the objects of the environments to a list
   env <- mget(ls())
@@ -263,6 +289,13 @@ if (cluster == T){
     #' ********************
     #' Init in @for loop:
     #' ********************
+    #' first, read and save data, so the sampling can be performed again
+    #'  in the next iteration
+    if (i != 1){
+      data <- readRDS(intermediateDataName)
+    }
+    saveRDS(data, file = intermediateDataName)
+    
     source(file.path(ROUT_PATH, "0.i.Init_in_loop.R"))
     
     
@@ -270,6 +303,8 @@ if (cluster == T){
     #' Get fishing date:
     #' ********************
     #' at that point if the missing dates are deduced
+    #' @filter known fishing date interval, no error in date, fishing location not missing,
+    #'         fish caught prior to 2020
     if(deduce_date == T){
       source(file.path(ROUT_PATH, "2.Calc_fishing_date.R"))
     }
@@ -277,6 +312,10 @@ if (cluster == T){
     #' ********************
     #' Get fishing location:
     #' ********************
+    #' @filter "non duplicated" line:
+    #'          concerns ~ 400 entries in the YFT data, 156 fish
+    #'          some rows are duplicated with only the geometry (POINT)
+    #'          differing
     source(file.path(ROUT_PATH, "3.Get_fishing_location.R"))
     
     
@@ -287,5 +326,6 @@ if (cluster == T){
     
   }
   
+  file.remove(intermediateDataName)
 }
 
