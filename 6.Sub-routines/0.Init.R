@@ -56,6 +56,7 @@ try(dir.create(OUTPUT_PATH, showWarnings = F, recursive = T))
 intermediateDataName <- file.path(OUTPUT_PATH, "df_intermediate.rds")
 dfGeneralName <- file.path(OUTPUT_PATH, "df_filtered.rds")
 readName <- file.path(OUTPUT_PATH, "README.txt")
+argsName <- file.path(OUTPUT_PATH, "README.rds")
 
 summaryName <- file.path(OUTPUT_PATH, "Processing_summary.txt")
 
@@ -69,6 +70,8 @@ sink(readName)
 cat("Arguments used\n\n")
 cat(paste(paste(names(format(arguments)), format(arguments), sep = ": "), collapse = "\n"))
 sink()
+
+saveRDS(arguments, argsName)
 
 
 # Define the seed number
