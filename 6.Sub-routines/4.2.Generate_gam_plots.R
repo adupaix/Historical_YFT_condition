@@ -72,9 +72,7 @@ if (part == 1){
   #' @save plots of the coefficients of the gams
   if (generate_plots){
     countries <- map_data("world")
-    
-    xlm <- c(min(data$lon), max(data$lon))
-    ylm <- c(min(data$lat), max(data$lat))
+
     
     if (is.null(smooth_col_limits)){
       if(Kn_transformation){
