@@ -8,7 +8,7 @@
 #'#*******************************************************************************************************************
 #' @tags:
 #' the @for_study tag is used before each argument, to specify which arguments were used to obtain the study results
-#' the @filter tag is used to make explicit where the different filters are applied (not perfectly in agreement with
+#' the @filter tag is used to make explicit where the different filters are applied (not exactly in agreement with
 #'             the names of the sub-routines)
 #'#*******************************************************************************************************************
 #'@revisions
@@ -151,7 +151,17 @@ cluster = T,
 #' diagnostic plots
 #' @for_study: set to F
 #' @! if cluster==T, generate_plots is automatically set to F
-generate_plots = F
+generate_plots = F,
+
+#' Geographical limits of the maps plotted during the study
+#'  also used to generate the prediction and to calculate the density
+#'  of sampling points per cell
+#' @for_study: set to xlm = c(30, 85),
+#'                    ylm = c(-25,20)
+xlm = c(30, 85),
+ylm = c(-25,20)
+
+
 )
 
 
@@ -222,6 +232,20 @@ cat("\n\n\nMissing location filter")
 cat("\n-----------------------\n")
 cat(paste0("\n    - Number of entries after missing location filter: ", dim(data)[1]))
 sink()
+
+#' @filter some fish by there identifier. Explanations:
+#'     - A368: among the potential fishing locations, one is in the Atlantic
+#'             either it's an error, or, if it's not, we cannot be certain that the
+#'             fish comes from the Indian Ocean
+#'             @update: corrected on the xlsx and csv files on 12 dec 2021
+data %>% filter(!(fish_identifier %in% c())) -> data
+
+sink(summaryName, append = T)
+cat("\n\n\nChoosen fish filter")
+cat("\n-----------------------\n")
+cat(paste0("\n    - Number of entries after choosen fish filter: ", dim(data)[1]))
+sink()
+
 
 #' ********************
 #' Get fishing date:
