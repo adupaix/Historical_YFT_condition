@@ -52,7 +52,7 @@ RESET = T,
 #' If VERBOSE is T, print information at every steps of the script
 #' if F, nothing is printed
 #' @! if cluster==T, VERBOSE is automatically set to F
-VERBOSE = T,
+VERBOSE = F,
 
 #' When missing, (T) choose to sample fork length (FL) from fish with the same first dorsal length (FDL)
 #'  (F) or not
@@ -96,6 +96,7 @@ size_class_levels = c("<75","75-120",">120"),
 #' choose if the fishing mode is included in the GAM
 #' variables (T) or not (F)
 #' @for_study: both are used
+#'             F for main study
 fad_fsc = F,
 
 #' choose if the model is performed on all the individuals
@@ -103,7 +104,8 @@ fad_fsc = F,
 #' one of "all", "DFAD", "FSC"
 #' 
 #' if fad_fsc is False, this argument is skipped
-#' @for_study: set to "all"
+#' @for_study: skipped for the main study
+#'             DFAD and FSC (with fad_fsc T) for supplementary
 fishing_mode_for_model = "all",
 
 #' Either pick randomly the missing dates from the log-normal
@@ -175,7 +177,7 @@ source(file.path(ROUT_PATH, "0.Init.R"))
 #' Read data:
 #' **********
 data1 <- read.table(file = file.path(DATA_PATH, "Tunabio_OI_20210826_env.csv"),
-                    sep = ";", dec=",",stringsAsFactors = F,
+                    sep = ",", dec=".",stringsAsFactors = F,
                     quote="\"", row.names = NULL,
                     h=T, colClasses = "character")
 data2 <- read.table(file = file.path(DATA_PATH, "Tunabio_OI_20210826_specimen.csv"),
