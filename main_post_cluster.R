@@ -69,49 +69,39 @@ installAndLoad_packages(srcUsedPackages, loadPackages = TRUE, verbose = F)
 # Generate the names of the outputs
 latlonPlotNames <- c(file.path(OUTPUT_PATH, study_date, "mean_latlon_plot.png"),
                      file.path(OUTPUT_PATH, study_date, "sd_latlon_plot.png"))
-coeffsPlotNames <- c(file.path(OUTPUT_PATH, study_date, "year_coeff.png"),
+coefDfPlotNames <- c(file.path(OUTPUT_PATH, study_date, "year_coeff.png"),
+                     file.path(OUTPUT_PATH, study_date, "year_coeff_violin.png"),
                      file.path(OUTPUT_PATH, study_date, "quarter_coeff.png"),
-                     file.path(OUTPUT_PATH, study_date, "size_class_coeff.png"))
+                     file.path(OUTPUT_PATH, study_date, "quarter_coeff_violin.png"),
+                     file.path(OUTPUT_PATH, study_date, "size_class_coeff.png"),
+                     file.path(OUTPUT_PATH, study_date, "size_class_coeff_violin.png"),
+                     file.path(OUTPUT_PATH, study_date, "fishing_mode_coeff.png"),
+                     file.path(OUTPUT_PATH, study_date, "fishing_mode_coeff_violin.png"))
 coeffTableName <- file.path(OUTPUT_PATH, study_date, "coeff_table.csv")
 
-# main.R generated one sub-directory per generated GAM
+#' source subfunctions
+source(file.path(FUNC_PATH, "subfunctions.R"))
+
+#' list all the GAMs (main.R generated one sub-directory per generated GAM)
 dirs <- list.dirs(file.path(OUTPUT_PATH, study_date), recursive = F)
 dirs <- dirs[-grep("Plots", dirs)]
 
-# dataframe which will contain the coefficients of all the GAMs
+#' dataframe which will contain the coefficients of all the GAMs
+#' give 100 columns and delete the empty columns afterwards (no need to provide the number of coefficient as argument)
 coef.df <- data.frame(matrix(ncol = 100, nrow = 0))
 
 # list of dataframes of predicted values by each model
 ct_int_pred <- list()
 
-# cat("Getting latitude and longitude range")
-# pb <- txtProgressBar(max = length(dirs), style = 3)
-# 
-# maxs <- c(0,0)
-# mins <- c(0,0)
-# 
-# for (i in 1:length(dirs)){
-#   setTxtProgressBar(pb, i)
-#   
-#   gam <- readRDS(file.path(dirs[i], grep("gam.*rds", list.files(dirs[i]), value = T)))
-#   
-#   data <- gam$model
-#   
-#   min.x.i <- min(data$scaled_lon)
-#   max.x.i <- max(data$scaled_lon)
-#   min.y.i <- min(data$scaled_lat)
-#   max.y.i <- max(data$scaled_lat)
-#   
-#   maxs.i <- c(max.x.i, max.y.i)
-#   mins.i <- c(min.x.i, min.y.i)
-#   
-#   for (k in 1:2){
-#     if (maxs.i[k] > maxs[k]){maxs.i[k] -> maxs[k]}
-#     if (mins.i[k] < mins[k]){mins.i[k] -> mins[k] ; if(k==1){j <- i}}
-#   }
-# }
-# 
-# close(pb)
+# get range from the first gam, to get the scale coefficients, which very slightly changed from a gam to another
+#'@CHANGE the scaling above ? or just kick it the f*** out
+gam <- readRDS(file.path(dirs[1], grep("gam.*rds", list.files(dirs[1]), value = T)))
+data <- gam$model
+#'@scaling (to scale/unscale lat and long inside the loop)
+sc_lon <- attr(data$scaled_lon, "scaled:scale")
+ce_lon <- attr(data$scaled_lon, "scaled:center")
+sc_lat <- attr(data$scaled_lat, "scaled:scale")
+ce_lat <- attr(data$scaled_lat, "scaled:center")
 
 cat("Getting prediction from every model")
 
@@ -131,14 +121,16 @@ for (i in 1:length(dirs)){
   #'@spatial_term
   data <- gam$model
   
+  
+  
   # get the gam prediction, for every lat lon pair
   # with, for every other variable, the values chosen in the arguments
   ct_int_pred[[i]] <- expand_grid(
-    scaled_lon = seq(from=xlm[1], 
-                     to=xlm[2], 
+    scaled_lon = seq(from=(xlm[1]-ce_lon)/sc_lon, 
+                     to=(xlm[2]-ce_lon)/sc_lon, 
                      length.out = 50),
-    scaled_lat = seq(from=ylm[1],
-                     to=ylm[2], 
+    scaled_lat = seq(from=(ylm[1]-ce_lat)/sc_lat,
+                     to=(ylm[2]-ce_lat)/sc_lat, 
                      length.out = 50),
     fishing_quarter = predict_var_values$fishing_quarter,
     fishing_year = predict_var_values$fishing_year,
@@ -155,7 +147,6 @@ for (i in 1:length(dirs)){
 close(pb)
 
 #'@factor_terms
-coef.df <- coef.df[-1,]
 cols <- !apply(coef.df, 2, function(x) all(is.na(x)))
 coef.df <- coef.df[,cols]
 
@@ -165,14 +156,9 @@ write.csv(x = coef.df, file = coeffTableName)
 #' @spatial_term
 df_tot <- abind(ct_int_pred, along = 3)
 
-len <- 250
+len = length(dirs)
+# len <- 500
 if(len!=length(dirs)){df_tot <- df_tot[,,1:len]}
-
-  #'@formatting (to unscale lat and long inside the loop)
-sc_lon <- attr(data$scaled_lon, "scaled:scale")
-ce_lon <- attr(data$scaled_lon, "scaled:center")
-sc_lat <- attr(data$scaled_lat, "scaled:scale")
-ce_lat <- attr(data$scaled_lat, "scaled:center")
 
   #' limits of the colour scale and binwidth of the level lines
 if (is.null(smooth_col_limits)){
@@ -232,7 +218,7 @@ for (k in 1:length(f)){
     coord_sf(xlim = xlm, ylim = ylm, expand = FALSE, crs = st_crs(4326)) +
     geom_tile(aes(fill = fit), alpha = 0.8) +
     scale_fill_gradientn(col_titles[k], limits = lims[[k]], colors = c("blue","grey","red"))+
-    geom_contour(aes(z = fit), binwidth = bwidth[[k]], colour = "grey40")+
+    geom_contour(aes(z = fit), binwidth = bwidth[k], colour = "grey40")+
     theme(panel.background = element_blank(),
           panel.border = element_rect(fill=NA))+
     geom_polygon(data=countries, aes(x=long, y=lat, group = group))+
@@ -244,3 +230,26 @@ for (k in 1:length(f)){
 
 # rm(col_fit, col_lon, col_lat, df_fit, df_lon, df_lat) ; invisible(gc())
 
+
+#'******************************
+#' Plots of the GAM coefficients
+#'******************************
+p1 <- plot.coef.df(coef.df, "fishing_year", labelx = "Year")
+p2 <- plot.coef.df(coef.df, "fishing_quarter", labelx = "Quarter")
+
+ggsave(coefDfPlotNames[1], p1[[1]])
+ggsave(coefDfPlotNames[2], p1[[2]])
+ggsave(coefDfPlotNames[3], p2[[1]])
+ggsave(coefDfPlotNames[4], p2[[2]])
+
+if (size_class_for_model == 'all'){
+  p3 <- plot.coef.df(coef.df, "size_class", levels_order = size_class_levels[-1], labelx = "Size Class")
+  ggsave(coefDfPlotNames[5], p3[[1]])
+  ggsave(coefDfPlotNames[6], p3[[2]])
+}
+
+if (fad_fsc == T & fishing_mode_for_model == "all"){
+  p4 <- plot.coef.df(coef.df, "fishing_mode", labelx = "School Type")
+  ggsave(coefDfPlotNames[7], p4[[1]])
+  ggsave(coefDfPlotNames[8], p4[[2]])
+}

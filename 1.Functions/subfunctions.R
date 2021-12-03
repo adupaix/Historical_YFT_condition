@@ -148,3 +148,57 @@ stepAIC.gam <- function(gam, verbose = F){
   return(gam)
 }
 
+
+
+plot.coef.df <- function(coef.df, var, levels_order = NULL,
+                         labelx = var){
+  
+  coef.df <- coef.df[,grep(var, names(coef.df))]
+  names(coef.df) <- gsub(pattern = paste0(".*",substr(var, nchar(var)-1, nchar(var))),
+                         "", names(coef.df))
+  
+  if (!is.null(levels_order)){
+    if (length(levels_order) != dim(coef.df)[2]){
+      stop("Error: wrong levels provided")
+    } else {
+      coef.df <- coef.df[,levels_order]
+    }
+  } else {
+    levels_order <- names(coef.df)
+  }
+  
+  data.frame(var = names(coef.df),
+             coeff = apply(coef.df, 2, mean),
+             sd = apply(coef.df, 2, sd),
+             n = dim(coef.df)[1]) %>%
+    mutate(se = sd/sqrt(n)) -> df
+  
+  p1 <- ggplot()+
+    geom_point(data = df, aes(x=factor(var, levels = levels_order),
+                              y = coeff))+
+    geom_errorbar(data = df, aes(x=factor(var, levels = levels_order),
+                                 ymin = coeff - sd,
+                                 ymax = coeff + sd),
+                  width = 0.25/length(levels_order), size = 0.5)+
+    # scale_y_continuous(limits = c(-0.15, 0.15))+
+    geom_hline(yintercept = 0)+
+    xlab(labelx)+ylab("GAM coefficient")+
+    theme(axis.text.x = element_text(angle = 90),
+          panel.border = element_rect(color = "black", fill = NA),
+          axis.text = element_text(size = 16),
+          axis.title = element_text(size = 18))
+  
+  coef.df %>% pivot_longer(cols = names(coef.df), names_to = "var", values_to = "coeff") -> df2 
+  
+  p2 <- ggplot()+
+    geom_hline(yintercept = 0)+
+    geom_violin(data = df2, aes(x=factor(var, levels = levels_order),
+                                y = coeff))+
+    xlab(labelx)+ylab("GAM coefficient")+
+    theme(axis.text.x = element_text(angle = 90),
+          panel.border = element_rect(color = "black", fill = NA),
+          axis.text = element_text(size = 16),
+          axis.title = element_text(size = 18))
+  
+  return(list(p1,p2))
+}
