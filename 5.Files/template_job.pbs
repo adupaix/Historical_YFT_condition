@@ -31,6 +31,9 @@ Rscript $SCRATCH/Historical_YFT_condition/main.R &> out_data_prep.log
 # run the bootstrap
 time $MPI_LAUNCH -np 112 $SCRATCH/ichthyop-mpi/ichthyopmpi $SCRATCH/Historical_YFT_condition/commands_bootstrap.txt &> out_bootstrap.log
 
+# run the post bootstrap script generating figures
+Rscript $SCRATCH/Historical_YFT_condition/main_post_cluster.R &> out_post_bootsrap.log
+
 # remove the intermediate files
 #rm -rfv all_objects.rds
 #rm -rfv commands_bootstrap.txt
