@@ -89,11 +89,11 @@ if (part == 1){
     
     
     ct_int_pred <- expand_grid(
-      scaled_lon = seq(from=min(data$scaled_lon), 
-                       to=max(data$scaled_lon), 
+      lon = seq(from=min(data$lon), 
+                       to=max(data$lon), 
                        length.out = 100),
-      scaled_lat = seq(from=min(data$scaled_lat), 
-                       to=max(data$scaled_lat), 
+      lat = seq(from=min(data$lat), 
+                       to=max(data$lat), 
                        length.out = 100),
       fishing_quarter = "1",
       fishing_year = min(as.numeric(as.character(data$fishing_year))),
@@ -104,17 +104,10 @@ if (part == 1){
       ct_int_pred$fishing_mode <- "DFAD"
     }
       
-    sc_lon <- attr(data$scaled_lon, "scaled:scale")
-    ce_lon <- attr(data$scaled_lon, "scaled:center")
-    sc_lat <- attr(data$scaled_lat, "scaled:scale")
-    ce_lat <- attr(data$scaled_lat, "scaled:center")
-      
     ct_int_pred <- predict(gam1, newdata = ct_int_pred, 
                            se.fit = TRUE) %>%  
       as_tibble() %>% 
-      cbind(ct_int_pred) %>%
-      mutate(lon = scaled_lon * sc_lon + ce_lon,
-             lat = scaled_lat * sc_lat + ce_lat)
+      cbind(ct_int_pred)
       
     predict_latlon <- ggplot(ct_int_pred, aes(x=lon, y=lat)) + 
       coord_sf(xlim = xlm, ylim = ylm, expand = FALSE, crs = st_crs(4326))

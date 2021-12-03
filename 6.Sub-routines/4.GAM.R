@@ -78,29 +78,29 @@ if (generate_plots){
 #' @4. Build the model
 if (size_class_for_model == "all"){
   if (fad_fsc == F){
-    gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + s(scaled_lon, scaled_lat),
+    gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + s(lon, lat),
                       data = data)
     
   } else {
     if (fishing_mode_for_model == "all"){
-      gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + fishing_mode + s(scaled_lon, scaled_lat),
+      gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + fishing_mode + s(lon, lat),
                         data = data)
     } else {
-      gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + s(scaled_lon, scaled_lat),
+      gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + size_class + s(lon, lat),
                         data = data)
     }
   }
 } else {
   if (fad_fsc == F){
-    gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + s(scaled_lon, scaled_lat),
+    gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + s(lon, lat),
                       data = data)
     
   } else {
     if (fishing_mode_for_model == "all"){
-      gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + fishing_mode + s(scaled_lon, scaled_lat),
+      gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + fishing_mode + s(lon, lat),
                         data = data)
     } else {
-      gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + s(scaled_lon, scaled_lat),
+      gam1 <- mgcv::gam(Kn ~ fishing_quarter + fishing_year + s(lon, lat),
                         data = data)
     }
   }

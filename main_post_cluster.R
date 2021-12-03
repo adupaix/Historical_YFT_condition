@@ -93,16 +93,6 @@ coef.df <- data.frame(matrix(ncol = 100, nrow = 0))
 # list of dataframes of predicted values by each model
 ct_int_pred <- list()
 
-# get range from the first gam, to get the scale coefficients, which very slightly changed from a gam to another
-#'@CHANGE the scaling above ? or just kick it the f*** out
-gam <- readRDS(file.path(dirs[1], grep("gam.*rds", list.files(dirs[1]), value = T)))
-data <- gam$model
-#'@scaling (to scale/unscale lat and long inside the loop)
-sc_lon <- attr(data$scaled_lon, "scaled:scale")
-ce_lon <- attr(data$scaled_lon, "scaled:center")
-sc_lat <- attr(data$scaled_lat, "scaled:scale")
-ce_lat <- attr(data$scaled_lat, "scaled:center")
-
 cat("Getting prediction from every model")
 
 pb <- txtProgressBar(max = length(dirs), style = 3)
@@ -114,24 +104,22 @@ for (i in 1:length(dirs)){
   gam <- readRDS(file.path(dirs[i], grep("gam.*rds", list.files(dirs[i]), value = T)))
   
   #'@factor_terms
-  coef <- coefficients(gam)[-grep("scaled_", names(coefficients(gam)))]
+  coef <- coefficients(gam)[-grep("lon|lat", names(coefficients(gam)))]
   coef.df <- rbind(coef.df, c(coef, rep(NA, 100-length(coef))))
   names(coef.df) <- names(coef)
   
   #'@spatial_term
   data <- gam$model
   
-  
-  
   # get the gam prediction, for every lat lon pair
   # with, for every other variable, the values chosen in the arguments
   ct_int_pred[[i]] <- expand_grid(
-    scaled_lon = seq(from=(xlm[1]-ce_lon)/sc_lon, 
-                     to=(xlm[2]-ce_lon)/sc_lon, 
-                     length.out = 50),
-    scaled_lat = seq(from=(ylm[1]-ce_lat)/sc_lat,
-                     to=(ylm[2]-ce_lat)/sc_lat, 
-                     length.out = 50),
+    lon = seq(from=xlm[1], 
+              to=xlm[2], 
+              length.out = 50),
+    lat = seq(from=ylm[1],
+              to=ylm[2], 
+              length.out = 50),
     fishing_quarter = predict_var_values$fishing_quarter,
     fishing_year = predict_var_values$fishing_year,
     size_class = predict_var_values$size_class
@@ -140,7 +128,7 @@ for (i in 1:length(dirs)){
   ct_int_pred[[i]] <- predict(gam, newdata = ct_int_pred[[i]], se.fit = TRUE) %>%  
     as_tibble() %>% 
     cbind(ct_int_pred[[i]]) %>%
-    dplyr::select(fit, scaled_lon, scaled_lat)
+    dplyr::select(fit, lon, lat)
   
 }
 
@@ -206,12 +194,9 @@ for (k in 1:length(f)){
   col_lat <- df_lat[,1]
   
   df_list[[f[k]]] <- as.data.frame(cbind(fit = col_fit,
-                                         scaled_lon = col_lon,
-                                         scaled_lat = col_lat))
+                                         lon = col_lon,
+                                         lat = col_lat))
   
-  df_list[[f[k]]] %>%
-    mutate(lon = scaled_lon * sc_lon + ce_lon,
-           lat = scaled_lat * sc_lat + ce_lat) -> df_list[[f[k]]]
   
   #' @plot
   plot_list[[f[k]]] <- ggplot(df_list[[f[k]]], aes(x=lon, y=lat)) +

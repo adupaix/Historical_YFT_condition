@@ -98,9 +98,7 @@ coordinates <- data.frame(st_coordinates(data))
 N1 <- dim(data)[1]
 
 data %>% mutate(lon = coordinates$X,
-                lat = coordinates$Y) %>%
-  mutate(scaled_lon = scale(lon, scale = T, center = T), 
-         scaled_lat = scale(lat, scale = T, center = T)) -> data
+                lat = coordinates$Y) -> data
 
 N2 <- dim(data)[1]
 Nna <- N1 - N2 ; rm(N1, N2)
