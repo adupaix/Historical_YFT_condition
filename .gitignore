@@ -6,3 +6,4 @@
 *.Rproj
 cfg/*
 !cfg/cfg_template.R
+!cfg/job_template.pbs
