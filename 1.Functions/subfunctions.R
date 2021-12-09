@@ -150,21 +150,36 @@ stepAIC.gam <- function(gam, verbose = F){
 
 
 
-plot.coef.df <- function(coef.df, var, levels_order = NULL,
+plot.coef.df <- function(coef.df, var, levels = NULL, level_ref = NULL,
                          labelx = var){
   
   coef.df <- coef.df[,grep(var, names(coef.df))]
   names(coef.df) <- gsub(pattern = paste0(".*",substr(var, nchar(var)-1, nchar(var))),
                          "", names(coef.df))
   
-  if (!is.null(levels_order)){
-    if (length(levels_order) != dim(coef.df)[2]){
-      stop("Error: wrong levels provided")
+  if (!is.null(levels)){
+    if (length(levels) != dim(coef.df)[2]+1){
+      stop("Error: wrong levels provided. Please note that the reference level also needs to be provided.")
     } else {
-      coef.df <- coef.df[,levels_order]
+      if (is.null(level_ref)){
+        stop("Error: please specify the level of reference")
+      } else {
+        # keep the names of the levels with coefficients different from 0
+        nm <- names(coef.df)
+        # add a column with the reference level
+        coef.df <- data.frame(cbind(rep(0,dim(coef.df)[1]),
+                                    coef.df))
+        # rename coef.df properly, getting the missing name from the provided variable levels
+        names(coef.df) <- c(levels[which(!levels %in% nm)],
+                            nm)
+        # reorder the columns according to the provided order in levels
+        coef.df <- coef.df[,levels]
+        
+        coef.df <- as.data.frame(apply(coef.df, 2, function(x) x-coef.df[,level_ref]))
+      }
     }
   } else {
-    levels_order <- names(coef.df)
+    levels <- names(coef.df)
   }
   
   data.frame(var = names(coef.df),
@@ -174,12 +189,12 @@ plot.coef.df <- function(coef.df, var, levels_order = NULL,
     mutate(se = sd/sqrt(n)) -> df
   
   p1 <- ggplot()+
-    geom_point(data = df, aes(x=factor(var, levels = levels_order),
+    geom_point(data = df, aes(x=factor(var, levels = levels),
                               y = coeff))+
-    geom_errorbar(data = df, aes(x=factor(var, levels = levels_order),
+    geom_errorbar(data = df, aes(x=factor(var, levels = levels),
                                  ymin = coeff - sd,
                                  ymax = coeff + sd),
-                  width = 0.25/length(levels_order), size = 0.5)+
+                  width = 0.25/length(levels), size = 0.5)+
     # scale_y_continuous(limits = c(-0.15, 0.15))+
     geom_hline(yintercept = 0)+
     xlab(labelx)+ylab("GAM coefficient")+
@@ -192,8 +207,9 @@ plot.coef.df <- function(coef.df, var, levels_order = NULL,
   
   p2 <- ggplot()+
     geom_hline(yintercept = 0)+
-    geom_violin(data = df2, aes(x=factor(var, levels = levels_order),
+    geom_violin(data = df2, aes(x=factor(var, levels = levels),
                                 y = coeff))+
+    geom_point(aes(x=level_ref, y=0))+
     xlab(labelx)+ylab("GAM coefficient")+
     theme(axis.text.x = element_text(angle = 90),
           panel.border = element_rect(color = "black", fill = NA),
