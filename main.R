@@ -121,6 +121,19 @@ if(deduce_date == F){
 #'  in sub-routine 3.Get_fishing_location
 if (generate_plots){
   source(file.path(ROUT_PATH, "1.Generate_figures.R"))
+} else {
+  #' @filter "non duplicated" line:
+  #'          concerns ~ 400 entries in the YFT data, 156 fish
+  #'          some rows are duplicated with only the geometry (POINT)
+  #'          differing
+  #' @!! in this subroutine, work on "data_fig" not on "data" (only the first of the
+  #' duplicated rows is kept, as the geographical data is not used)
+  #' This filter will be applied again on "data" but applying the geometry_method
+  #'  in sub-routine 3.Get_fishing_location
+  data %>% filter(!duplicated(fish_identifier)) -> data_fig
+  
+  #' @save the data.frame used for the figure 1 (general data.frame)
+  saveRDS(data_fig, dfGeneralName)
 }
 
 
