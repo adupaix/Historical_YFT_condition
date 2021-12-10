@@ -151,7 +151,7 @@ stepAIC.gam <- function(gam, verbose = F){
 
 
 plot.coef.df <- function(coef.df, var, levels = NULL, level_ref = NULL,
-                         labelx = var){
+                         labelx = var, output_path){
   
   coef.df <- coef.df[,grep(var, names(coef.df))]
   names(coef.df) <- gsub(pattern = paste0(".*",substr(var, nchar(var)-1, nchar(var))),
@@ -176,6 +176,8 @@ plot.coef.df <- function(coef.df, var, levels = NULL, level_ref = NULL,
         coef.df <- coef.df[,levels]
         
         coef.df <- as.data.frame(apply(coef.df, 2, function(x) x-coef.df[,level_ref]))
+        
+        write.csv(coef.df, file.path(output_path, paste0("coef_figure_",var,".csv")))
       }
     }
   } else {
