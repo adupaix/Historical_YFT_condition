@@ -263,10 +263,12 @@ for (k in 1:length(f)){
 data_filtered <- readRDS(file.path(OUTPUT_PATH, study_date, "df_filtered.rds"))
 p1 <- plot.coef.df(coef.df, "fishing_year", levels = levels(data_filtered$fishing_year),
                    level_ref = as.character(predict_var_values$fishing_year),
-                   labelx = "Year")
+                   labelx = "Year",
+                   output_path = file.path(OUTPUT_PATH, study_date))
 p2 <- plot.coef.df(coef.df, "fishing_quarter", levels = levels(data_filtered$fishing_quarter),
                    level_ref = as.character(predict_var_values$fishing_quarter),
-                   labelx = "Quarter")
+                   labelx = "Quarter",
+                   output_path = file.path(OUTPUT_PATH, study_date))
 
 ggsave(coefDfPlotNames[1], p1[[1]])
 ggsave(coefDfPlotNames[2], p1[[2]])
@@ -281,7 +283,8 @@ global_plot_list <- list(plot_list[[1]], plot_list[[2]],
 if (size_class_for_model == 'all'){
   p3 <- plot.coef.df(coef.df, "size_class", levels = size_class_levels,
                      level_ref = as.character(predict_var_values$size_class),
-                     labelx = "Size Class")
+                     labelx = "Size Class",
+                     output_path = file.path(OUTPUT_PATH, study_date))
   ggsave(coefDfPlotNames[5], p3[[1]])
   ggsave(coefDfPlotNames[6], p3[[2]])
   
