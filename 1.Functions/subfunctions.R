@@ -215,7 +215,7 @@ plot.coef.df <- function(coef.df, p.val.df, var, levels = NULL, level_ref = NULL
   rang <- range(coef.df)[2]-range(coef.df)[1]
   
   annotation <- data.frame(x = factor(df$var, levels = levels),
-                           y = max(df$coeff)+rang/10,
+                           y = max(coef.df)+rang/10,
                            signi = signi)
   
   p1 <- ggplot()+
