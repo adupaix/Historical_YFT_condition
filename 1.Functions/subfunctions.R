@@ -150,12 +150,18 @@ stepAIC.gam <- function(gam, verbose = F){
 
 
 
-plot.coef.df <- function(coef.df, var, levels = NULL, level_ref = NULL,
+plot.coef.df <- function(coef.df, p.val.df, var, levels = NULL, level_ref = NULL,
                          labelx = var, output_path){
   
+  # get the columns of interest in the df with coefficients
   coef.df <- coef.df[,grep(var, names(coef.df))]
   names(coef.df) <- gsub(pattern = paste0(".*",substr(var, nchar(var)-1, nchar(var))),
                          "", names(coef.df))
+  
+  # get the columns of interest in the df with coefficients
+  p.val.df <- p.val.df[,grep(var, names(p.val.df))]
+  names(p.val.df) <- gsub(pattern = paste0(".*",substr(var, nchar(var)-1, nchar(var))),
+                          "", names(p.val.df))
   
   if (!is.null(levels)){
     if (length(levels) != dim(coef.df)[2]+1){
@@ -166,14 +172,21 @@ plot.coef.df <- function(coef.df, var, levels = NULL, level_ref = NULL,
       } else {
         # keep the names of the levels with coefficients different from 0
         nm <- names(coef.df)
+        
         # add a column with the reference level
         coef.df <- data.frame(cbind(rep(0,dim(coef.df)[1]),
                                     coef.df))
+        p.val.df <- data.frame(cbind(rep(1,dim(p.val.df)[1]),
+                                     p.val.df))
         # rename coef.df properly, getting the missing name from the provided variable levels
         names(coef.df) <- c(levels[which(!levels %in% nm)],
                             nm)
+        names(p.val.df) <- c(levels[which(!levels %in% nm)],
+                            nm)
+        
         # reorder the columns according to the provided order in levels
         coef.df <- coef.df[,levels]
+        p.val.df <- p.val.df[,levels]
         
         coef.df <- as.data.frame(apply(coef.df, 2, function(x) x-coef.df[,level_ref]))
         
@@ -190,6 +203,21 @@ plot.coef.df <- function(coef.df, var, levels = NULL, level_ref = NULL,
              n = dim(coef.df)[1]) %>%
     mutate(se = sd/sqrt(n)) -> df
   
+  
+  
+  #' significance
+  signif.df <- as.data.frame(apply(p.val.df, c(1,2), function(x) x<=0.05))
+  signi <- apply(signif.df, 2, function(x) 100*sum(x)/length(x))
+  l = which(names(signi) == level_ref)
+  signi <- as.character(format(signi, digits = 3))
+  signi[l] <- ""
+  
+  rang <- range(coef.df)[2]-range(coef.df)[1]
+  
+  annotation <- data.frame(x = factor(df$var, levels = levels),
+                           y = max(df$coeff)+rang/10,
+                           signi = signi)
+  
   p1 <- ggplot()+
     geom_point(data = df, aes(x=factor(var, levels = levels),
                               y = coeff))+
@@ -197,6 +225,9 @@ plot.coef.df <- function(coef.df, var, levels = NULL, level_ref = NULL,
                                  ymin = coeff - sd,
                                  ymax = coeff + sd),
                   width = 0.25/length(levels), size = 0.5)+
+    geom_text(data = annotation,
+              aes(x = x, y = y, label = signi),
+              angle = 45, color = "grey40")+
     # scale_y_continuous(limits = c(-0.15, 0.15))+
     geom_hline(yintercept = 0)+
     xlab(labelx)+ylab("GAM coefficient")+
@@ -212,6 +243,9 @@ plot.coef.df <- function(coef.df, var, levels = NULL, level_ref = NULL,
     geom_violin(data = df2, aes(x=factor(var, levels = levels),
                                 y = coeff))+
     geom_point(aes(x=level_ref, y=0))+
+    geom_text(data = annotation,
+              aes(x = x, y = y, label = signi),
+              angle = 45, color = "grey40")+
     xlab(labelx)+ylab("GAM coefficient")+
     theme(axis.text.x = element_text(angle = 90),
           panel.border = element_rect(color = "black", fill = NA),

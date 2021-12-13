@@ -40,15 +40,6 @@ study_date = "2021-12-06-whole_dataset"
 arguments <- readRDS(file.path(OUTPUT_PATH, study_date, "README.rds"))
 list2env(arguments, envir = .GlobalEnv)
 
-#' Values of the explanatory variables chosen to make the spatial prediction
-#' @for_study: predict_var_values = list(fishing_quarter = "1",
-#'                                       fishing_year = 2008,
-#'                                       size_class = "<75")
-#'                                       
-predict_var_values = list(fishing_quarter = "1",
-                          fishing_year = 2008,
-                          size_class = "<75")
-
 #' ***************
 #' Get libraries:
 #' ***************
@@ -73,6 +64,7 @@ coefDfPlotNames <- c(file.path(OUTPUT_PATH, study_date, "Plots", "year_coeff.png
                      file.path(OUTPUT_PATH, study_date, "Plots", "fishing_mode_coeff.png"),
                      file.path(OUTPUT_PATH, study_date, "Plots", "fishing_mode_coeff_violin.png"))
 coeffTableName <- file.path(OUTPUT_PATH, study_date, "coeff_table.csv")
+pValTableName <- file.path(OUTPUT_PATH, study_date, "coeff_table_p-values.csv")
 plotListName <- file.path(OUTPUT_PATH, study_date, "global_plot_list.rds")
 rSquareName <- file.path(OUTPUT_PATH, study_date, "r_squares.rds")
 
@@ -88,6 +80,7 @@ dirs <- dirs[-grep("Plots", dirs)]
 #' dataframe which will contain the coefficients of all the GAMs
 #' give 100 columns and delete the empty columns afterwards (no need to provide the number of coefficient as argument)
 coef.df <- data.frame(matrix(ncol = 100, nrow = 0))
+p.val.df <- data.frame(matrix(ncol = 100, nrow = 0))
 
 # list of dataframes of predicted values by each model
 ct_int_pred <- list()
@@ -117,6 +110,11 @@ for (i in 1:length(dirs)){
   coef.df <- rbind(coef.df, c(coef, rep(NA, 100-length(coef))))
   names(coef.df) <- names(coef)
   
+  #'@significance of factor terms
+  p.val <- summary(gam)$p.table[,4]
+  p.val.df <- rbind(p.val.df, c(p.val, rep(NA, 100-length(p.val))))
+  names(p.val.df) <- names(coef)
+  
   #'@spatial_term
   data <- gam$model
   
@@ -129,9 +127,9 @@ for (i in 1:length(dirs)){
     lat = seq(from=ylm[1],
               to=ylm[2], 
               length.out = ylm[2]-ylm[1]+1),
-    fishing_quarter = predict_var_values$fishing_quarter,
-    fishing_year = predict_var_values$fishing_year,
-    size_class = predict_var_values$size_class
+    fishing_quarter = ref_var_values$fishing_quarter,
+    fishing_year = ref_var_values$fishing_year,
+    size_class = ref_var_values$size_class
   )
   
   ct_int_pred[[i]] <- predict(gam, newdata = ct_int_pred[[i]], se.fit = TRUE) %>%  
@@ -162,9 +160,16 @@ if (cluster == F & VERBOSE == T){
 #'@factor_terms
 cols <- !apply(coef.df, 2, function(x) all(is.na(x)))
 coef.df <- coef.df[,cols]
-
 #' @save the table with all the coefficients
 write.csv(x = coef.df, file = coeffTableName)
+
+
+#'@significance of factor terms
+cols <- !apply(p.val.df, 2, function(x) all(is.na(x)))
+p.val.df <- p.val.df[,cols]
+#' @save the table with the p-values associated with all the coefficients
+write.csv(x = p.val.df, file = pValTableName)
+
 
 #' @spatial_term
 df_tot <- abind(ct_int_pred, along = 3)
@@ -261,12 +266,12 @@ for (k in 1:length(f)){
 #' Plots of the GAM coefficients
 #'******************************
 data_filtered <- readRDS(file.path(OUTPUT_PATH, study_date, "df_filtered.rds"))
-p1 <- plot.coef.df(coef.df, "fishing_year", levels = levels(data_filtered$fishing_year),
-                   level_ref = as.character(predict_var_values$fishing_year),
+p1 <- plot.coef.df(coef.df, p.val.df, "fishing_year", levels = levels(data_filtered$fishing_year),
+                   level_ref = as.character(ref_var_values$fishing_year),
                    labelx = "Year",
                    output_path = file.path(OUTPUT_PATH, study_date))
-p2 <- plot.coef.df(coef.df, "fishing_quarter", levels = levels(data_filtered$fishing_quarter),
-                   level_ref = as.character(predict_var_values$fishing_quarter),
+p2 <- plot.coef.df(coef.df, p.val.df, "fishing_quarter", levels = levels(data_filtered$fishing_quarter),
+                   level_ref = as.character(ref_var_values$fishing_quarter),
                    labelx = "Quarter",
                    output_path = file.path(OUTPUT_PATH, study_date))
 
@@ -281,8 +286,8 @@ global_plot_list <- list(plot_list[[1]], plot_list[[2]],
                          p2[[1]],p2[[2]])
 
 if (size_class_for_model == 'all'){
-  p3 <- plot.coef.df(coef.df, "size_class", levels = size_class_levels,
-                     level_ref = as.character(predict_var_values$size_class),
+  p3 <- plot.coef.df(coef.df, p.val.df, "size_class", levels = size_class_levels,
+                     level_ref = as.character(ref_var_values$size_class),
                      labelx = "Size Class",
                      output_path = file.path(OUTPUT_PATH, study_date))
   ggsave(coefDfPlotNames[5], p3[[1]])
@@ -292,7 +297,7 @@ if (size_class_for_model == 'all'){
 }
 
 if (fad_fsc == T & fishing_mode_for_model == "all"){
-  p4 <- plot.coef.df(coef.df, "fishing_mode", labelx = "School Type")
+  p4 <- plot.coef.df(coef.df, p.val.df, "fishing_mode", labelx = "School Type")
   ggsave(coefDfPlotNames[7], p4[[1]])
   ggsave(coefDfPlotNames[8], p4[[2]])
   

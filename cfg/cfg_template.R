@@ -26,15 +26,23 @@ ROUT_PATH <- file.path(WD,"6.Sub-routines")
 
 PLOT_PATH <- file.path(OUTPUT_PATH, "Plots")
 
+#'#**********
+#'@arguments:
+#'#**********
 arguments <- list(
+  #' General arguments
+  #'#********************
+  
   #' @reproductibility
-  nb_of_times_to_run = 1000, #' @for_study: set to 1000?
+  #' number of times to perform the geometry sampling and build the GAM
+  #' @for_study: set to 1000
+  nb_of_times_to_run = 1000,
+  #' If we run only once, the seed to use
+  #' @for_study: does not matter
   SEED = 123456,
   
-  #'@arguments:
-  #'#**********
   #'# Run in parallel ?
-  #' (in prep_wl_data, to read geometry)
+  #' (@! only in prep_wl_data, to read geometry)
   #' First element of the vector:
   #'    If F, runs in sequential
   #'    if T, runs in parallel
@@ -52,6 +60,14 @@ arguments <- list(
   #' @! if cluster==T, VERBOSE is automatically set to F
   VERBOSE = T,
   
+  #' Choose if the GAMs are generated following this script (F)
+  #' or if the scripts necessary to generate the GAMs
+  #' on a cluster are generated (T)
+  #' #' @for_study: set to T
+  cluster = F,
+  
+  #' Arguments for data preparation
+  #'#******************************
   #' When missing, (T) choose to sample fork length (FL) from fish with the same first dorsal length (FDL)
   #'  (F) or not
   #'  @for_study: set to F
@@ -67,44 +83,14 @@ arguments <- list(
   #' @for_study: set to "fromData"
   allom = "fromData",
   
-  #' Either to perform the Moran's tests (T) or not (F)
-  #' @for_study: set to T
-  check_spatial_autocorr = T,
-  
   #' @Figure_1
+  #' **********
   #' size classes for filtering data
   #' Used to generate Figure 1
   #' @for_study: set to c("<75","75-120",">120")
   # size_classes = c("40-60","<102",">102"),
   # size_classes = c("<75","75-120",">120"),
   size_classes_fig1 = c("<75","75-120",">120"),
-  
-  #' @GAM
-  #' choose if the model is performed on all the individuals
-  #' or only on a given size class
-  #' @for_study: set to "all"
-  size_class_for_model = "all",
-  
-  #' choose how to define the size classes used in the model (in the size_class variable)
-  #' @!! the vector has to be in the format c("<x1","x1-x2",...,"x(n-1)-xn",">xn")
-  #' @for_study: set to c("<75","75-120",">120")
-  size_class_levels = c("<75","75-120",">120"),
-  # size_class_levels = c("<90",">90"),
-  
-  #' choose if the fishing mode is included in the GAM
-  #' variables (T) or not (F)
-  #' @for_study: both are used
-  #'             F for main study
-  fad_fsc = F,
-  
-  #' choose if the model is performed on all the individuals
-  #' or only on one of the fishing modes
-  #' one of "all", "DFAD", "FSC"
-  #' 
-  #' if fad_fsc is False, this argument is skipped
-  #' @for_study: skipped for the main study
-  #'             DFAD and FSC (with fad_fsc T) for supplementary
-  fishing_mode_for_model = "all",
   
   #' Either pick randomly the missing dates from the log-normal
   #' distribution fitted on the time between the sampling and the fishing date (T)
@@ -130,6 +116,53 @@ arguments <- list(
   #' @for_study: set to "sampling"
   geometry_method = "sampling",
   
+  
+  #' @GAM
+  #' **********
+  #' choose if the model is performed on all the individuals
+  #' or only on a given size class
+  #' @for_study: set to "all"
+  size_class_for_model = "all",
+  
+  #' choose how to define the size classes used in the model (in the size_class variable)
+  #' @!! the vector has to be in the format c("<x1","x1-x2",...,"x(n-1)-xn",">xn")
+  #' @for_study: set to c("<75","75-120",">120")
+  size_class_levels = c("<75","75-120",">120"),
+  # size_class_levels = c("<90",">90"),
+  
+  #' Either to perform the Moran's tests (T) or not (F)
+  #' @for_study: set to T
+  check_spatial_autocorr = T,
+  
+  #' choose if the fishing mode is included in the GAM
+  #' variables (T) or not (F)
+  #' @for_study: both are used
+  #'             F for main study
+  fad_fsc = F,
+  
+  #' choose if the model is performed on all the individuals
+  #' or only on one of the fishing modes
+  #' one of "all", "DFAD", "FSC"
+  #' 
+  #' if fad_fsc is False, this argument is skipped
+  #' @for_study: skipped for the main study
+  #'             DFAD and FSC (with fad_fsc T) for supplementary
+  fishing_mode_for_model = "all",
+  
+  #' Values of the explanatory variables chosen as reference levels
+  #'  also used to make the spatial prediction
+  #' @for_study: ref_var_values = list(fishing_quarter = "1",
+  #'                                       fishing_year = 2019,
+  #'                                       size_class = "<75")
+  #'                                       
+  ref_var_values = list(fishing_quarter = "1",
+                        fishing_year = 2019,
+                        size_class = "<75",
+                        fishing_mode = "DFAD"),
+  
+  
+  #' @Plots
+  #' **********
   #' The limits of the colour scale of
   #' the plot representing the lat-lon smooth
   #' if NULL, the limits are c(0.9,1.1) if the GH transformation is not appliedd
@@ -137,12 +170,6 @@ arguments <- list(
   #' @for_study: set to NULL
   # smooth_col_limits = c(0.8,1)
   smooth_col_limits = NULL,
-  
-  #' Choose if the GAMs are generated following this script (F)
-  #' or if the scripts necessary to generate the GAMs
-  #' on a cluster are generated (T)
-  #' #' @for_study: set to T
-  cluster = F,
   
   #' Choose if plots are generated or not
   #' if (F), the script only performs the model
