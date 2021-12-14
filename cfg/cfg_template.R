@@ -36,7 +36,7 @@ arguments <- list(
   #' @reproductibility
   #' number of times to perform the geometry sampling and build the GAM
   #' @for_study: set to 1000
-  nb_of_times_to_run = 1000,
+  nb_of_times_to_run = 1,
   #' If we run only once, the seed to use
   #' @for_study: does not matter
   SEED = 123456,
@@ -152,11 +152,11 @@ arguments <- list(
   #' Values of the explanatory variables chosen as reference levels
   #'  also used to make the spatial prediction
   #' @for_study: ref_var_values = list(fishing_quarter = "1",
-  #'                                       fishing_year = 2019,
+  #'                                       fishing_year = "2019",
   #'                                       size_class = "<75")
   #'                                       
   ref_var_values = list(fishing_quarter = "1",
-                        fishing_year = 2019,
+                        fishing_year = "2019",
                         size_class = "<75",
                         fishing_mode = "DFAD"),
   
