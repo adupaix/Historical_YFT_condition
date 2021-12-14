@@ -76,50 +76,51 @@ if (generate_plots){
 }
 
 #' @4. Build the model
+#' 
+#' relevel the variables, to have the chosen level as reference
+data$fishing_year <- relevel(data$fishing_year, ref = ref_var_values$fishing_year)
+data$fishing_quarter <- relevel(data$fishing_quarter, ref = ref_var_values$fishing_quarter)
+
 if (size_class_for_model == "all"){
+  
+  data$size_class <- relevel(data$size_class, ref = ref_var_values$size_class)
+  
   if (fad_fsc == F){
-    gam1 <- mgcv::gam(Kn ~ relevel(fishing_quarter, ref = ref_var_values$fishing_quarter) +
-                        relevel(fishing_year, ref = ref_var_values$fishing_year) +
-                        relevel(size_class, ref = ref_var_values$size_class) +
+    gam1 <- mgcv::gam(Kn ~ fishing_quarter +
+                        fishing_year +
+                        size_class +
                         s(lon, lat),
                       data = data)
     
-  } else {
-    if (fishing_mode_for_model == "all"){
-      gam1 <- mgcv::gam(Kn ~ relevel(fishing_quarter, ref = ref_var_values$fishing_quarter) +
-                          relevel(fishing_year, ref = ref_var_values$fishing_year) +
-                          relevel(size_class, ref = ref_var_values$size_class) +
-                          relevel(fishing_mode, ref = ref_var_values$fishing_mode) +
+  } else if (fishing_mode_for_model == "all"){
+      
+      data$fishing_mode <- relevel(data$fishing_mode, ref = ref_var_values$fishing_mode)
+      
+      gam1 <- mgcv::gam(Kn ~ fishing_quarter +
+                          fishing_year +
+                          size_class +
+                          fishing_mode +
                           s(lon, lat),
                         data = data)
-    } else {
-      gam1 <- mgcv::gam(Kn ~ relevel(fishing_quarter, ref = ref_var_values$fishing_quarter) +
-                          relevel(fishing_year, ref = ref_var_values$fishing_year) +
-                          relevel(size_class, ref = ref_var_values$size_class) +
-                          s(lon, lat),
-                        data = data)
-    }
+    
   }
 } else {
   if (fad_fsc == F){
-    gam1 <- mgcv::gam(Kn ~ relevel(fishing_quarter, ref = ref_var_values$fishing_quarter) +
-                        relevel(fishing_year, ref = ref_var_values$fishing_year) +
+    gam1 <- mgcv::gam(Kn ~ fishing_quarter +
+                        fishing_year +
                         s(lon, lat),
                       data = data)
     
-  } else {
-    if (fishing_mode_for_model == "all"){
-      gam1 <- mgcv::gam(Kn ~ relevel(fishing_quarter, ref = ref_var_values$fishing_quarter) +
-                          relevel(fishing_year, ref = ref_var_values$fishing_year) +
-                          relevel(fishing_mode, ref = ref_var_values$fishing_mode) +
+  } else if (fishing_mode_for_model == "all"){
+      
+      data$fishing_mode <- relevel(data$fishing_mode, ref = ref_var_values$fishing_mode)
+      
+      gam1 <- mgcv::gam(Kn ~ fishing_quarter +
+                          fishing_year +
+                          fishing_mode +
                           s(lon, lat),
                         data = data)
-    } else {
-      gam1 <- mgcv::gam(Kn ~ relevel(fishing_quarter, ref = ref_var_values$fishing_quarter) +
-                          relevel(fishing_year, ref = ref_var_values$fishing_year) +
-                          s(lon, lat),
-                        data = data)
-    }
+    
   }
 }
 
