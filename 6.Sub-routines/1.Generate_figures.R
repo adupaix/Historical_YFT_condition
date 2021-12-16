@@ -84,28 +84,31 @@ if (length(size_classes_fig1 != 0)){
 diff_following_years <- lead(as.numeric(levels(as.factor(toplot$fishing_year)))) - as.numeric(levels(as.factor(toplot$fishing_year)))
 line_pos = which(diff_following_years != 1)+0.5
 
-# prepare the facet wrap
+# prepare the facet wrap + specify lintype
 grp_break = levels(toplot$fishing_year)[which(diff_following_years != 1)]
 if (length(grp_break) == 1){
   toplot %>% mutate(facet_grp = case_when(as.numeric(as.character(fishing_year))<=grp_break ~ 1,
                                           as.numeric(as.character(fishing_year))>grp_break ~ 2)) %>%
-    mutate(facet_grp = paste(group, facet_grp, sep = "_"))-> toplot
+    mutate(facet_grp = paste(group, facet_grp, sep = "_"),
+           linetypes = case_when(group=="all"~1,
+                                 group!="all"~2))-> toplot
 }
 
 if (length(size_classes_fig1) != 0){
   fig1 <- ggplot(toplot, aes(x = as.factor(fishing_year), y = m, shape = group, color = group, group = group))+
     geom_errorbar(aes(ymin = m - se, ymax = m + se), alpha = 0.6, width = 0.2, size = 0.5, position = position_dodge(0.25))+
-    geom_line(aes(group = facet_grp), alpha = .8)+
+    geom_line(aes(group = facet_grp, linetype = group), alpha = .8)+
     geom_point(position = position_dodge(0.25), size = 1.5)+
     # facet_wrap(~facet_grp, strip.position = NULL, scales = "free_x")+
-    scale_shape_manual(values = c(15,16,17,21))+
-    scale_color_brewer("Size class", palette = "Set1")+
+    scale_shape_manual(values = 16:19)+
+    scale_color_manual(values = c(RColorBrewer::brewer.pal(3, "Set1"), "grey20"))+
+    scale_linetype_manual(values = c(2,2,2,1))+
     geom_vline(aes(xintercept = line_pos))+
     theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust=1),
           panel.border = element_rect(color = "black", fill = NA))+
     ylab("Mean Kn")+
     xlab("Fishing year") +
-    labs(shape = "Size class")
+    labs(shape = "Size class", linetype = "Size class", color = "Size class")
 } else {
   fig1 <- ggplot(toplot, aes(x = as.factor(fishing_year), y = m))+
     geom_point(size = 0.75, position = position_dodge(0.25))+
