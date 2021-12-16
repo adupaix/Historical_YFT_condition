@@ -47,11 +47,9 @@ if (year_by_groups){
 if (fad_fsc == T){
   data %>% dplyr::filter(fishing_mode %in% c("DFAD","FSC")) %>%
     mutate(fishing_mode = as.factor(fishing_mode)) -> data
-  
-  if (fishing_mode_for_model != 'all'){
-    data %>% filter(fishing_mode == fishing_mode_for_model) -> data
-  }
-  
+}
+if (fishing_mode_for_model != 'all'){
+  data %>% filter(fishing_mode == fishing_mode_for_model) -> data
 }
 
 if(Kn_transformation == T){
@@ -85,7 +83,7 @@ if (size_class_for_model == "all"){
   
   data$size_class <- relevel(data$size_class, ref = ref_var_values$size_class)
   
-  if (fad_fsc == F){
+  if (fad_fsc == F | fishing_mode_for_model != "all"){
     gam1 <- mgcv::gam(Kn ~ fishing_quarter +
                         fishing_year +
                         size_class +
@@ -105,7 +103,7 @@ if (size_class_for_model == "all"){
     
   }
 } else {
-  if (fad_fsc == F){
+  if (fad_fsc == F | fishing_mode_for_model != "all"){
     gam1 <- mgcv::gam(Kn ~ fishing_quarter +
                         fishing_year +
                         s(lon, lat),
