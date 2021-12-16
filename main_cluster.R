@@ -22,7 +22,7 @@ WD <- getwd()
 # WD <- "home1/scratch/adupaix/Historical_YFT_condition"
 
 env_name <- as.character(Args[1])
-list_of_objects <- readRDS(file.path(WD, env_name))
+list_of_objects <- readRDS(env_name)
 list2env(list_of_objects, .GlobalEnv)
 
 i <- as.numeric(Args[2])

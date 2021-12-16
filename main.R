@@ -144,9 +144,9 @@ if (cluster == T){
   #' ******************************
   # save all the objects of the environments to a list
   env <- mget(ls())
-  fname <- "all_objects.rds"
+  fname <- file.path(OUTPUT_PATH, "all_objects.rds")
   # and save that list as an .rds file (which will be loaded again afterwards)
-  saveRDS(env, file.path(WD, fname))
+  saveRDS(env, fname)
   
   #' *************************
   #' Generate the command list
@@ -156,8 +156,8 @@ if (cluster == T){
                      fname, " ",
                      1:nb_of_times_to_run)
   
-  file.create(file.path(WD, "commands_bootstrap.txt"))
-  cmds <- file(file.path(WD, "commands_bootstrap.txt"), open = "w")
+  file.create(file.path(WD, paste0("commands_bootstrap",output_suffixe,".txt")))
+  cmds <- file(file.path(WD, paste0("commands_bootstrap",output_suffixe,".txt")), open = "w")
   writeLines(commands, cmds)
   close(cmds)
   

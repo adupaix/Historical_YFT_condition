@@ -56,7 +56,9 @@ arguments <- list(
   cluster = F,
   
   #' Name added to the output folder, after the date
-  output_suffixe = "whole_dataset",
+  #' @!! needs to be added to the name of the command_bootstrap file in the pbs job
+  #'     the name will be "command_bootstrap[output_suffixe].txt"
+  output_suffixe = "",
   
   #' Arguments for data preparation
   #'#******************************
