@@ -31,7 +31,7 @@ DATA_PATH <- file.path(WD, "0.Data/")
 
 FUNC_PATH <- file.path(WD,"1.Functions")
 # OUTPUT_PATH <- file.path(WD, "3.Outputs", format(Sys.time()))
-OUTPUT_PATH <- file.path(WD, "3.Outputs", format(Sys.Date()))
+OUTPUT_PATH <- file.path(WD, "3.Outputs", paste0(format(Sys.Date()), output_suffixe))
 ROUT_PATH <- file.path(WD,"6.Sub-routines")
 
 PLOT_PATH <- file.path(OUTPUT_PATH, "Plots")

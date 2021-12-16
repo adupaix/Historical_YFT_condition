@@ -15,17 +15,6 @@
 rm(list = ls())
 invisible(gc())
 
-WD <- getwd()
-
-DATA_PATH <- file.path(WD, "0.Data/")
-
-FUNC_PATH <- file.path(WD,"1.Functions")
-# OUTPUT_PATH <- file.path(WD, "3.Outputs", format(Sys.time()))
-OUTPUT_PATH <- file.path(WD, "3.Outputs", format(Sys.Date()))
-ROUT_PATH <- file.path(WD,"6.Sub-routines")
-
-PLOT_PATH <- file.path(OUTPUT_PATH, "Plots")
-
 #'#**********
 #'@arguments:
 #'#**********
@@ -65,6 +54,9 @@ arguments <- list(
   #' on a cluster are generated (T)
   #' #' @for_study: set to T
   cluster = F,
+  
+  #' Name added to the output folder, after the date
+  output_suffixe = "whole_dataset",
   
   #' Arguments for data preparation
   #'#******************************
@@ -190,6 +182,18 @@ arguments <- list(
   
   
 )
+
+#'#*****
+#'@paths:
+#'#*****
+WD <- getwd()
+
+DATA_PATH <- file.path(WD, "0.Data/")
+FUNC_PATH <- file.path(WD,"1.Functions")
+# OUTPUT_PATH <- file.path(WD, "3.Outputs", format(Sys.time()))
+OUTPUT_PATH <- file.path(WD, "3.Outputs", paste0(format(Sys.Date()), arguments$output_suffixe))
+ROUT_PATH <- file.path(WD,"6.Sub-routines")
+PLOT_PATH <- file.path(OUTPUT_PATH, "Plots")
 
 
 source(file.path(WD, "main.R"))
