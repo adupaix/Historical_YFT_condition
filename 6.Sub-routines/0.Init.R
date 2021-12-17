@@ -77,7 +77,7 @@ saveRDS(arguments, argsName)
 # Define the seed number
 #' @modif
 if (nb_of_times_to_run != 1){
-  seeds <- round(runif(nb_of_times_to_run, 1, 10^6))
+  seeds <- round(runif(nb_of_times_to_run, 1, 10^8))
 } else {
   seeds = SEED
 }

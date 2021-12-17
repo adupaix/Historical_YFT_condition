@@ -28,7 +28,7 @@ arguments <- list(
   nb_of_times_to_run = 1,
   #' If we run only once, the seed to use
   #' @for_study: does not matter
-  SEED = 123456,
+  SEED = 12345678,
   
   #'# Run in parallel ?
   #' (@! only in prep_wl_data, to read geometry)
