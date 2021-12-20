@@ -150,16 +150,30 @@ stepAIC.gam <- function(gam, verbose = F){
 
 
 
+#' @function | Built 2 plots:
+#'     - one with value of the coefficient as a function of the levels of the explanatory variable of interest
+#'     - one with a violin plot of the coefficients
+#' @arguments:
+#'  coef.df (list) of dataframes: Each of the data frame contains in columns the coefficients of each level of a variable
+#'           and in line each model iteration
+#'  p.val.df (list) of dataframes: Each of the data frame contains in columns the p-values of each level of a variable
+#'           and in line each model iteration
+#'  var (chr) : the name of the variable of interest
+#'  levels (vector): levels of the variable of interest, if we want to reorder them on the plot
+#'  level_ref (chr): level of reference the variable of interest. The plot is represented with the coefficient of this level set to 0
+#'  labelx (chr): legend to print of the x axis of the plot
+#'  output_path (chr): path to the folder where the plot will be saved
+
 plot.coef.df <- function(coef.df, p.val.df, var, levels = NULL, level_ref = NULL,
                          labelx = var, output_path){
   
-  # get the columns of interest in the df with coefficients
-  coef.df <- coef.df[,grep(var, names(coef.df))]
+  # get the dataframe of interest in the list
+  coef.df <- coef.df[[var]]
   names(coef.df) <- gsub(pattern = paste0(".*",substr(var, nchar(var)-1, nchar(var))),
                          "", names(coef.df))
   
   # get the columns of interest in the df with coefficients
-  p.val.df <- p.val.df[,grep(var, names(p.val.df))]
+  p.val.df <- p.val.df[[var]]
   names(p.val.df) <- gsub(pattern = paste0(".*",substr(var, nchar(var)-1, nchar(var))),
                           "", names(p.val.df))
   
