@@ -6,7 +6,7 @@ Mail: amael.dupaix@ens-lyon.fr
 
 # Run
 
-The scripts run with [R version 4.0.3]()
+The scripts run with [R version 4.0.3](https://www.r-project.org/)
 
 The [conda](https://docs.conda.io/projects/conda/en/latest/) environment to run the model is provided. To create, type : `conda env create -f r-tuna-condition.yml`
 
