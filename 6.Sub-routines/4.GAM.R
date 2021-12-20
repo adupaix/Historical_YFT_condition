@@ -11,26 +11,19 @@
 #' @1. If size_class_for_model != 'all', subsample the data to keep only one size class
 if (size_class_for_model != 'all'){
   
-  if (size_class_for_model %in% size_classes_fig1){
-    
-    data <- data_byclass[[grep(size_class_for_model, size_classes_fig1)+1]]
-    
-  } else {
-    
-    if (grepl("-", size_class_for_model)){
-      l1 <- as.numeric(sub("-.*", "", size_class_for_model))
-      l2 <- as.numeric(sub(".*-", "", size_class_for_model))
-    } else if (grepl(">", size_class_for_model)){
-      l1 <- as.numeric(sub(">", "", size_class_for_model))
-      l2 <- Inf
-    } else if (grepl("<", size_class_for_model)){
-      l1 <- 0
-      l2 <- as.numeric(sub("<", "", size_class_for_model))
-    }
-    
-    data %>% filter(fork_length > l1 & fork_length <= l2 ) -> data
-    
+  if (grepl("-", size_class_for_model)){
+    l1 <- as.numeric(sub("-.*", "", size_class_for_model))
+    l2 <- as.numeric(sub(".*-", "", size_class_for_model))
+  } else if (grepl(">", size_class_for_model)){
+    l1 <- as.numeric(sub(">", "", size_class_for_model))
+    l2 <- Inf
+  } else if (grepl("<", size_class_for_model)){
+    l1 <- 0
+    l2 <- as.numeric(sub("<", "", size_class_for_model))
   }
+    
+  data %>% filter(fork_length > l1 & fork_length <= l2 ) -> data
+    
 }
 
 #' @2. Scale quantitative variables + scale and center geographical variables
