@@ -17,7 +17,10 @@ if (part == 1){
     msg <- "\n\n~~~~ Performing Moran's I test on Kn ~~~~" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
   }
   
-  if (size_class_for_model == "all"){
+  #' The number are a bit arbitrary, but preliminary tests showed that
+  #' subsampling the dataset to look at the spatial autocorrelation
+  #' did not change the obtained results
+  if (dim(data)[1]>3000){
     to_sample <- sample.int(dim(data)[1], size = 2000)
   } else {
     to_sample <- 1:(dim(data)[1])
