@@ -20,6 +20,7 @@ prep_wl_data <- function(DATA_PATH,
                          verbose = F){
   
   if (verbose){
+    if (!"lines.to.cat" %in% ls(envir = .GlobalEnv)){lines.to.cat <<- "\14"}
     msg <- "\n\n~~~~ Preparing weight-length data ~~~~\n\n" ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
   }
   
