@@ -22,7 +22,7 @@ if (size_class_for_model != 'all'){
     l2 <- as.numeric(sub("<", "", size_class_for_model))
   }
     
-  data %>% filter(fork_length > l1 & fork_length <= l2 ) -> data
+  data %>% dplyr::filter(fork_length > l1 & fork_length <= l2 ) -> data
     
 }
 
