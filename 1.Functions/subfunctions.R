@@ -168,14 +168,22 @@ plot.coef.df <- function(coef.df, p.val.df, var, levels = NULL, level_ref = NULL
                          labelx = var, output_path){
   
   # get the dataframe of interest in the list
-  coef.df <- coef.df[[var]]
-  names(coef.df) <- gsub(pattern = paste0(".*",substr(var, nchar(var)-1, nchar(var))),
-                         "", names(coef.df))
+  coef.df <- as.data.frame(coef.df[[var]])
+  if (dim(coef.df)[2]==1){
+    names(coef.df) <- levels[which(levels != level_ref)]
+  } else {
+    names(coef.df) <- gsub(pattern = paste0(".*",substr(var, nchar(var)-1, nchar(var))),
+                           "", names(coef.df))
+  }
   
   # get the columns of interest in the df with coefficients
-  p.val.df <- p.val.df[[var]]
-  names(p.val.df) <- gsub(pattern = paste0(".*",substr(var, nchar(var)-1, nchar(var))),
-                          "", names(p.val.df))
+  p.val.df <- as.data.frame(p.val.df[[var]])
+  if (dim(p.val.df)[2]==1){
+    names(p.val.df) <- levels[which(levels != level_ref)]
+  } else {
+    names(p.val.df) <- gsub(pattern = paste0(".*",substr(var, nchar(var)-1, nchar(var))),
+                            "", names(p.val.df))
+  }
   
   if (!is.null(levels)){
     if (length(levels) != dim(coef.df)[2]+1){
