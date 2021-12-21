@@ -54,7 +54,7 @@ if (VERBOSE){
 }
 
 #' @filter species of interest, caught by purse seiner
-data %>% filter(species_code_fao %in% species & gear_code == "PS") -> data
+data %>% dplyr::filter(species_code_fao %in% species & gear_code == "PS") -> data
 
 if (allom == "Chassot2015"){
   a = 0.00002459
@@ -76,7 +76,7 @@ sink()
 
 #' @filter fishing location not missing
 #' Keep only the data entries for which any type of geometry is available (POINT or MULTIPOINT)
-data %>% filter(!st_is_empty(data$geometry)) -> data
+data %>% dplyr::filter(!st_is_empty(data$geometry)) -> data
 
 sink(summaryName, append = T)
 cat("\n\n\nMissing location filter")
@@ -89,7 +89,7 @@ sink()
 #'             either it's an error, or, if it's not, we cannot be certain that the
 #'             fish comes from the Indian Ocean
 #'             @update: corrected on the xlsx and csv files on 12 dec 2021
-data %>% filter(!(fish_identifier %in% c())) -> data
+data %>% dplyr::filter(!(fish_identifier %in% c())) -> data
 
 sink(summaryName, append = T)
 cat("\n\n\nChoosen fish filter")
@@ -130,7 +130,7 @@ if (generate_plots){
   #' duplicated rows is kept, as the geographical data is not used)
   #' This filter will be applied again on "data" but applying the geometry_method
   #'  in sub-routine 3.Get_fishing_location
-  data %>% filter(!duplicated(fish_identifier)) -> data_fig
+  data %>% dplyr::filter(!duplicated(fish_identifier)) -> data_fig
   
   #' @save the data.frame used for the figure 1 (general data.frame)
   saveRDS(data_fig, dfGeneralName)
