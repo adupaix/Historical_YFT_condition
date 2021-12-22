@@ -57,7 +57,8 @@ figure2 <- function(data, var.to.compare, var.grp, levels.var.grp, var.x,
     
   }
   
-  df <- data.frame(cbind(var.x_of_int, p))
+  df <- data.frame(var.x_of_int = as.numeric(as.character(var.x_of_int)), 
+                   p)
   ntests <- dim(df)[1]
   
   signif_y <- df$var.x_of_int[which(df$p <= 0.05/ntests)]
