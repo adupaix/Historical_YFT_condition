@@ -27,7 +27,7 @@ if (VERBOSE){
 #' duplicated rows is kept, as the geographical data is not used)
 #' This filter will be applied again on "data" but applying the geometry_method
 #'  in sub-routine 3.Get_fishing_location
-data %>% filter(!duplicated(fish_identifier)) -> data_fig
+data %>% dplyr::filter(!duplicated(fish_identifier)) -> data_fig
 
 #' @save the data.frame used for the figure 1 (general data.frame)
 saveRDS(data_fig, dfGeneralName)
@@ -39,12 +39,12 @@ toplot <- list()
 
 data_byclass[[1]] <- data_fig
 
-data_fig %>% ddply(.variables = "fishing_year", summarise, n=n()) %>%
-  filter(n > 50) -> spl_sizes[[1]]
+data_fig %>% plyr::ddply(.variables = "fishing_year", summarise, n=n()) %>%
+  dplyr::filter(n > 50) -> spl_sizes[[1]]
 
-ddply(data_byclass[[1]], .variables = "fishing_year", summarise, sd = sd(Kn), m = mean(Kn), n = n()) %>%
-  mutate(se = sd / sqrt(n)) %>%
-  mutate(group = "all") -> toplot[[1]]
+plyr::ddply(data_byclass[[1]], .variables = "fishing_year", summarise, sd = sd(Kn), m = mean(Kn), n = n()) %>%
+  dplyr::mutate(se = sd / sqrt(n)) %>%
+  dplyr::mutate(group = "all") -> toplot[[1]]
 
 if (length(size_classes_fig1 != 0)){
   for (k in 1:length(size_classes_fig1)){
@@ -60,18 +60,18 @@ if (length(size_classes_fig1 != 0)){
       l2 <- as.numeric(sub("<", "", size_classes_fig1[k]))
     }
     
-    data_fig %>% filter(fork_length >= l1 & fork_length <= l2 ) %>%
-      ddply(.variables = "fishing_year", summarise, n=n()) %>%
-      filter(n > 50) -> spl_sizes[[k+1]]
+    data_fig %>% dplyr::filter(fork_length >= l1 & fork_length <= l2 ) %>%
+      plyr::ddply(.variables = "fishing_year", summarise, n=n()) %>%
+      dplyr::filter(n > 50) -> spl_sizes[[k+1]]
     
     y_of_int <- spl_sizes[[k+1]]$fishing_year
     
     data_fig %>%
-      filter(fishing_year %in% y_of_int & fork_length >= l1 & fork_length <= l2) -> data_byclass[[k+1]]
+      dplyr::filter(fishing_year %in% y_of_int & fork_length >= l1 & fork_length <= l2) -> data_byclass[[k+1]]
     
-    ddply(data_byclass[[k+1]], .variables = "fishing_year", summarise, sd = sd(Kn), m = mean(Kn), n = n()) %>%
-      mutate(se = sd / sqrt(n)) %>%
-      mutate(group = size_classes_fig1[k]) -> toplot[[k+1]]
+    plyr::ddply(data_byclass[[k+1]], .variables = "fishing_year", summarise, sd = sd(Kn), m = mean(Kn), n = n()) %>%
+      dplyr::mutate(se = sd / sqrt(n)) %>%
+      dplyr::mutate(group = size_classes_fig1[k]) -> toplot[[k+1]]
   }
   
   toplot <- bind_rows(toplot)
@@ -87,11 +87,11 @@ line_pos = which(diff_following_years != 1)+0.5
 # prepare the facet wrap + specify lintype
 grp_break = levels(toplot$fishing_year)[which(diff_following_years != 1)]
 if (length(grp_break) == 1){
-  toplot %>% mutate(facet_grp = case_when(as.numeric(as.character(fishing_year))<=grp_break ~ 1,
-                                          as.numeric(as.character(fishing_year))>grp_break ~ 2)) %>%
-    mutate(facet_grp = paste(group, facet_grp, sep = "_"),
-           linetypes = case_when(group=="all"~1,
-                                 group!="all"~2))-> toplot
+  toplot %>% dplyr::mutate(facet_grp = case_when(as.numeric(as.character(fishing_year))<=grp_break ~ 1,
+                                                 as.numeric(as.character(fishing_year))>grp_break ~ 2)) %>%
+    dplyr::mutate(facet_grp = paste(group, facet_grp, sep = "_"),
+                  linetypes = case_when(group=="all"~1,
+                                        group!="all"~2))-> toplot
 }
 
 if (length(size_classes_fig1) != 0){

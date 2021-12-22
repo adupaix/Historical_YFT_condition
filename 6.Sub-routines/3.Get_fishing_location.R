@@ -22,24 +22,24 @@ if (VERBOSE){
   msg <- "\n~~~~ Getting fishing location ~~~~\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
 }
 
-data %>% filter(geom_type != "MULTIPOINT") %>%
-  mutate(geom_sampled = F) -> data_na_point
+data %>% dplyr::filter(geom_type != "MULTIPOINT") %>%
+  dplyr::mutate(geom_sampled = F) -> data_na_point
 
-data %>% filter(geom_type == "MULTIPOINT") %>%
-  mutate(geom_sampled = T) -> data_multi
+data %>% dplyr::filter(geom_type == "MULTIPOINT") %>%
+  dplyr::mutate(geom_sampled = T) -> data_multi
 
 duplicated_fish <- unique(data_na_point$fish_identifier[duplicated(data_na_point$fish_identifier)])
 data_na_point %>%
-  filter(fish_identifier %in% duplicated_fish) -> data_hidden_multi
+  dplyr::filter(fish_identifier %in% duplicated_fish) -> data_hidden_multi
 
 data_hidden_multi <- points.to.multipoints(data_hidden_multi, data_hidden_multi$fish_identifier)
 
-data_hidden_multi %>% mutate(geom_sampled = T) -> data_hidden_multi
+data_hidden_multi %>% dplyr::mutate(geom_sampled = T) -> data_hidden_multi
 
 data_na_point %>%
-  filter(!fish_identifier %in% duplicated_fish) -> data_na_point
+  dplyr::filter(!fish_identifier %in% duplicated_fish) -> data_na_point
 
-bind_rows(data_multi, data_hidden_multi) %>%
+dplyr::bind_rows(data_multi, data_hidden_multi) %>%
   dplyr::arrange("fish_identifier") -> data_multi
 
 if (geometry_method == "sampling"){
@@ -67,12 +67,12 @@ if (geometry_method == "sampling"){
     
     data_multi[indexes,] %>%
       # change the MULTIPOINT to several lines with a POINT geometry
-      st_cast('POINT') %>%
+      sf::st_cast('POINT') %>%
       # keep only one line, randomly
-      ddply("fish_identifier", function(x) x[sample.int(x$n_points, 1),],
+      plyr::ddply("fish_identifier", function(x) x[sample.int(x$n_points, 1),],
             .progress = ifelse(VERBOSE, "text", "none")) %>%
       # ddply changes the sf data.frame back to a simple data.frame so we change the df back to sf
-      st_as_sf() -> data_multi_list[[k]]
+      sf::st_as_sf() -> data_multi_list[[k]]
   }
   
   txt <- "randomly sampled"
@@ -83,22 +83,22 @@ if (geometry_method == "sampling"){
     msg <- "    - Considering the centroid from MULTIPOINT geometries\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
   }
   
-  data_multi %>% st_transform(3857) %>%
-    st_centroid() %>%
-    st_transform(4326) -> data_multi_list
+  data_multi %>% sf::st_transform(3857) %>%
+    sf::st_centroid() %>%
+    sf::st_transform(4326) -> data_multi_list
   
   txt <- "centroid considered"
 }
 
-bind_rows(data_multi_list, data_na_point) %>%
+dplyr::bind_rows(data_multi_list, data_na_point) %>%
   dplyr::arrange("fish_identifier") -> data
 
 coordinates <- data.frame(st_coordinates(data))
 
 N1 <- dim(data)[1]
 
-data %>% mutate(lon = coordinates$X,
-                lat = coordinates$Y) -> data
+data %>% dplyr::mutate(lon = coordinates$X,
+                       lat = coordinates$Y) -> data
 
 N2 <- dim(data)[1]
 Nna <- N1 - N2 ; rm(N1, N2)

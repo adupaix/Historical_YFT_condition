@@ -198,7 +198,7 @@ for (i in 1:length(dirs)){
   # for every explanatory variable of the model, use the values chosen in the arguments
   for (k in 1:length(vars_of_model)){
     ct_int_pred[[i]] %>%
-      mutate(!!as.character(vars_of_model[k]) := ref_var_values[[vars_of_model[k]]]) -> ct_int_pred[[i]]
+      dplyr::mutate(!!as.character(vars_of_model[k]) := ref_var_values[[vars_of_model[k]]]) -> ct_int_pred[[i]]
   }
   
   ct_int_pred[[i]] <- predict(gam, newdata = ct_int_pred[[i]], se.fit = TRUE) %>%  
@@ -207,19 +207,19 @@ for (i in 1:length(dirs)){
     dplyr::select(fit, lon, lat)
   
   # get the number of samples per cell
-  data %>% mutate(lat_r = round(lat), lon_r = round(lon)) -> rdata
+  data %>% dplyr::mutate(lat_r = round(lat), lon_r = round(lon)) -> rdata
   
   table(rdata$lon_r, rdata$lat_r) %>% as.data.frame() %>%
-    expand_grid() %>%
-    rename("lon" = "Var1",
-           "lat" = "Var2",
-           "n_spl" = "Freq") %>%
-    mutate(lat = as.numeric(as.character(lat)),
+    tidyr::expand_grid() %>%
+    dplyr::rename("lon" = "Var1",
+                  "lat" = "Var2",
+                  "n_spl" = "Freq") %>%
+    dplyr::mutate(lat = as.numeric(as.character(lat)),
            lon = as.numeric(as.character(lon))) %>%
     as.data.frame() -> count_data
   
   merge(count_data, ct_int_pred[[i]], by = c("lon","lat"), all.y = T) %>%
-    mutate(n_spl = ifelse(is.na(n_spl), 0, n_spl)) -> ct_int_pred[[i]]
+    dplyr::mutate(n_spl = ifelse(is.na(n_spl), 0, n_spl)) -> ct_int_pred[[i]]
 }
 
 if (cluster == F & VERBOSE == T){
@@ -314,7 +314,7 @@ df_list[[1]] <- as.data.frame(cbind(fit = col_fit,
                                     lon = col_lon,
                                     lat = col_lat))
   # data.frame where only the cells with 0 points are kept (to add a grey canvas around the fishing area)
-df_list[[2]] <- df_list[[1]] %>% filter(fit==0)
+df_list[[2]] <- df_list[[1]] %>% dplyr::filter(fit==0)
 
 # Plot
 plot_list[[1]] <- ggplot(data = df_list[[1]], aes(x=lon, y=lat)) +
@@ -341,7 +341,7 @@ df_list[[3]] <- as.data.frame(cbind(fit = col_fit,
                                     lon = col_lon,
                                     lat = col_lat))
 # data frame with NA where no points were sampled
-df_list[[4]] <- df_list[[3]] %>% mutate(fit = ifelse(df_list[[1]]$fit == 0, NA, fit))
+df_list[[4]] <- df_list[[3]] %>% dplyr::mutate(fit = ifelse(df_list[[1]]$fit == 0, NA, fit))
   
   
 #' @plot
@@ -371,7 +371,7 @@ df_list[[5]] <- as.data.frame(cbind(fit = col_fit,
                                     lon = col_lon,
                                     lat = col_lat))
 
-df_list[[6]] <- df_list[[5]] %>% mutate(fit = ifelse(df_list[[1]]$fit == 0, NA, fit))
+df_list[[6]] <- df_list[[5]] %>% dplyr::mutate(fit = ifelse(df_list[[1]]$fit == 0, NA, fit))
 
 
 #' @plot

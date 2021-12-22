@@ -13,22 +13,22 @@ if (VERBOSE){
 }
 
 # keep only the entries for which the exact fishing date is known
-data %>% filter(!is.na(fishing_date)) %>%
+data %>% dplyr::filter(!is.na(fishing_date)) %>%
   # keep in a variable how the fishing date was obtained
-  mutate(fishing_date_origin = "exact") -> data_exact_dates
+  dplyr::mutate(fishing_date_origin = "exact") -> data_exact_dates
 
 N1 <- dim(data_exact_dates)[1]
 
 # save another part of the data for which a fishing date interval is known
-data %>% filter(is.na(fishing_date) & !is.na(fishing_date_min) & !is.na(fishing_date_max)) %>%
-  mutate(fishing_date_origin = "interval") -> data_interval_dates
+data %>% dplyr::filter(is.na(fishing_date) & !is.na(fishing_date_min) & !is.na(fishing_date_max)) %>%
+  dplyr::mutate(fishing_date_origin = "interval") -> data_interval_dates
 
 N2 <- dim(data_interval_dates)[1]
 
 # save the other part of the data frame (where the fishing date is to be deduced)
-data %>% filter(is.na(fishing_date) & is.na(fishing_date_min) & is.na(fishing_date_max)) %>%
+data %>% dplyr::filter(is.na(fishing_date) & is.na(fishing_date_min) & is.na(fishing_date_max)) %>%
   # keep in a variable if the fishing date was the real one or not
-  mutate(fishing_date_origin = "deduced") -> data_no_dates
+  dplyr::mutate(fishing_date_origin = "deduced") -> data_no_dates
 #' @remark: this data.frame (data_no_dates) should be empty, because when the fishing date interval
 #'          is absent, it means the fishing trip could not be deduced, hence the geometry is also
 #'          empty (neither a POINT nor a MULTIPOINT)
@@ -42,7 +42,7 @@ data %>% filter(is.na(fishing_date) & is.na(fishing_date_min) & is.na(fishing_da
 #'          the sampling date (often an error in the year, e.g. 2008 entered instead of 2018)
 #'       3. if an exact fishing date is provided and it's after the sampling date
 data_interval_dates %>%
-  filter(fishing_date_min > fish_sampling_date | 
+  dplyr::filter(fishing_date_min > fish_sampling_date | 
            # fishing_date_max >= fish_sampling_date & is.na(fishing_date) |
            # landing_date > fish_sampling_date |
            fish_sampling_date - fishing_date_max > 1000 |
@@ -52,18 +52,18 @@ data_interval_dates %>%
   st_drop_geometry() -> error_interval # errors 1 and 2
 
 data_exact_dates %>%
-  filter(fishing_date > fish_sampling_date) %>%
+  dplyr::filter(fishing_date > fish_sampling_date) %>%
   st_drop_geometry() -> error_exact # errors 3
 
-bind_rows(error_interval, error_exact) %>%
+dplyr::bind_rows(error_interval, error_exact) %>%
   write.csv(file.path(OUTPUT_PATH,"error_fishing_dates.csv"))
 
 # filter data to remove the above errors
 data_interval_dates %>%
-  filter(!(fish_identifier %in% error_interval$fish_identifier)) -> data_interval_dates
+  dplyr::filter(!(fish_identifier %in% error_interval$fish_identifier)) -> data_interval_dates
 
 data_exact_dates %>%
-  filter(!(fish_identifier %in% error_exact$fish_identifier)) -> data_exact_dates
+  dplyr::filter(!(fish_identifier %in% error_exact$fish_identifier)) -> data_exact_dates
 
 if (VERBOSE){
   msg <- paste0("    - Number of removed entries (date errors): ", dim(error_interval)[1]+dim(error_exact)[1], "\n") ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
@@ -71,16 +71,16 @@ if (VERBOSE){
 
 # For data with a date interval, take the middle of the interval
 data_interval_dates %>%
-  mutate(date1 = fishing_date_min,
+  dplyr::mutate(date1 = fishing_date_min,
          date2 = pmin(fishing_date_max, fish_sampling_date)) %>%
-  mutate(fishing_date = date1 + (date2 - date1)/2) %>%
+  dplyr::mutate(fishing_date = date1 + (date2 - date1)/2) %>%
   dplyr::select(-date1, -date2) -> data_interval_dates
 
 
 # bind data with date interval and with exact date
-bind_rows(data_interval_dates, data_exact_dates) %>%
+dplyr::bind_rows(data_interval_dates, data_exact_dates) %>%
   dplyr::arrange("fish_identifier") %>%
-  mutate(t_fishing_sampling = as.numeric(difftime(fish_sampling_date, fishing_date, units = "days")))-> data_dates
+  dplyr::mutate(t_fishing_sampling = as.numeric(difftime(fish_sampling_date, fishing_date, units = "days")))-> data_dates
 
 if (deduce_date & cluster == F){
   # fit a log normal law to the time between fishing and sampling
@@ -109,14 +109,14 @@ if (deduce_date & cluster == F){
   
   # for data with missing fishing dates, deduce a fishing date using the above fit
   data_no_dates %>%
-    mutate(t_fishing_sampling = rlnorm(dim(data_no_dates)[1],
-                                       meanlog = fit_lnorm$estimate[1],
-                                       sdlog = fit_lnorm$estimate[2])) %>%
-    mutate(fishing_date = fish_sampling_date - as.difftime(t_fishing_sampling, units = "days")) -> data_no_dates
+    dplyr::mutate(t_fishing_sampling = rlnorm(dim(data_no_dates)[1],
+                                              meanlog = fit_lnorm$estimate[1],
+                                              sdlog = fit_lnorm$estimate[2])) %>%
+    dplyr::mutate(fishing_date = fish_sampling_date - as.difftime(t_fishing_sampling, units = "days")) -> data_no_dates
   
   
   #bind data with dates and data with randomly assigned dates
-  bind_rows(data_dates, data_no_dates) -> data
+  dplyr::bind_rows(data_dates, data_no_dates) -> data
   
   if (VERBOSE){
     msg <- paste0("    - Number of deduced entries (missing date): ", dim(data_no_dates)[1], "\n") ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
@@ -132,9 +132,9 @@ if (deduce_date & cluster == F){
 }
 
 data %>%
-  mutate(fishing_year = year(fishing_date),
-         fishing_month = as.factor(month(fishing_date)),
-         fishing_quarter = as.factor(quarter(fishing_date, fiscal_start = 12))) -> data
+  dplyr::mutate(fishing_year = year(fishing_date),
+                fishing_month = as.factor(month(fishing_date)),
+                fishing_quarter = as.factor(quarter(fishing_date, fiscal_start = 12))) -> data
 
 N3 <- dim(data)[1]
 
@@ -142,8 +142,8 @@ N3 <- dim(data)[1]
 #' Keep only data before 2020
 #'     sampling on YFT in 2020 was mainly performed in January on tuna fished in Nov or Dec 2019
 data %>%
-  filter(fishing_year < 2020) %>%
-  mutate(fishing_year = as.factor(fishing_year)) -> data
+  dplyr::filter(fishing_year < 2020) %>%
+  dplyr::mutate(fishing_year = as.factor(fishing_year)) -> data
 
 sink(summaryName, append = T)
 cat("\n\n\nDates filter")

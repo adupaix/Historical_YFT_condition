@@ -39,18 +39,18 @@ if (year_by_groups){
 
 if (fad_fsc == T){
   data %>% dplyr::filter(fishing_mode %in% c("DFAD","FSC")) %>%
-    mutate(fishing_mode = as.factor(fishing_mode)) -> data
+    dplyr::mutate(fishing_mode = as.factor(fishing_mode)) -> data
 }
 if (fishing_mode_for_model != 'all'){
-  data %>% filter(fishing_mode == fishing_mode_for_model) -> data
+  data %>% dplyr::filter(fishing_mode == fishing_mode_for_model) -> data
 }
 
 if(Kn_transformation == T){
   
-  data %>% mutate(Kn = geary.hinkley.transform(Kn,
-                                               weight_th,
-                                               whole_fish_weight,
-                                               cor.method = "pearson")) -> data
+  data %>% dplyr::mutate(Kn = geary.hinkley.transform(Kn,
+                                                      weight_th,
+                                                      whole_fish_weight,
+                                                      cor.method = "pearson")) -> data
 }
 
 #' @2. Testing for spatial autocorrelation

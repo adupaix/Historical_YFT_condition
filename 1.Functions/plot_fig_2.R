@@ -25,17 +25,17 @@ figure2 <- function(data, var.to.compare, var.grp, levels.var.grp, var.x,
   
   data %>% dplyr::filter((!!rlang::sym(var.grp)) %in% levels.var.grp) %>%
     plyr::ddply(.variables = c(var.x,var.grp), summarise, n=n()) %>%
-    spread((!!rlang::sym(var.grp)), n) %>%
-    filter(!is.na((!!rlang::sym(levels.var.grp[1]))) & !is.na((!!rlang::sym(levels.var.grp[2])))) -> spl_sizes
+    tidyr::spread((!!rlang::sym(var.grp)), n) %>%
+    dplyr::filter(!is.na((!!rlang::sym(levels.var.grp[1]))) & !is.na((!!rlang::sym(levels.var.grp[2])))) -> spl_sizes
   
   var.x_of_int <- spl_sizes[,var.x]
   
   data %>% 
-    filter((!!rlang::sym(var.x)) %in% var.x_of_int & (!!rlang::sym(var.grp)) %in% levels.var.grp) -> dat_
+    dplyr::filter((!!rlang::sym(var.x)) %in% var.x_of_int & (!!rlang::sym(var.grp)) %in% levels.var.grp) -> dat_
   
-  dat_ %>% ddply(.variables = c(var.x,var.grp), summarise, m = mean(!!rlang::sym(var.to.compare)),
+  dat_ %>% plyr::ddply(.variables = c(var.x,var.grp), summarise, m = mean(!!rlang::sym(var.to.compare)),
                  sd = sd(!!rlang::sym(var.to.compare)), n = n()) %>%
-    mutate(se = sd / sqrt(n)) -> toplot
+    dplyr::mutate(se = sd / sqrt(n)) -> toplot
   
   p <- c()
   
@@ -80,9 +80,9 @@ figure2 <- function(data, var.to.compare, var.grp, levels.var.grp, var.x,
           legend.background = element_rect(colour = "black"))+
     ylab(paste("Mean", var.to.compare))
   
-  toplot %>% ddply(.variables = var.x, .fun = function(x){
-    (x %>% filter(!!rlang::sym(var.grp) == levels.var.grp[1]))$m -
-      (x %>% filter(!!rlang::sym(var.grp) == levels.var.grp[2]))$m
+  toplot %>% plyr::ddply(.variables = var.x, .fun = function(x){
+    (x %>% dplyr::filter(!!rlang::sym(var.grp) == levels.var.grp[1]))$m -
+      (x %>% dplyr::filter(!!rlang::sym(var.grp) == levels.var.grp[2]))$m
   }) -> data_hist
   
   p3.2 <- ggplot(data_hist, aes(x = as.factor(!!rlang::sym(var.x)), y = V1))+

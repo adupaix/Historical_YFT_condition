@@ -55,7 +55,7 @@ plot.coeff <- function(gam, var, levels_order = NULL,
   my_colors <- ifelse(p.value < 0.05 / length(p.value), "black", "grey40")
   
   data.frame(coeff) %>% tibble::rownames_to_column(var = var) %>%
-    mutate(se = se, col = my_colors) -> df
+    dplyr::mutate(se = se, col = my_colors) -> df
   
   p <- ggplot()+
     geom_point(data = df, aes(x=factor(!!rlang::sym(var), levels = levels_order),
@@ -223,7 +223,7 @@ plot.coef.df <- function(coef.df, p.val.df, var, levels = NULL, level_ref = NULL
              coeff = apply(coef.df, 2, mean),
              sd = apply(coef.df, 2, sd),
              n = dim(coef.df)[1]) %>%
-    mutate(se = sd/sqrt(n)) -> df
+    dplyr::mutate(se = sd/sqrt(n)) -> df
   
   
   
@@ -258,7 +258,7 @@ plot.coef.df <- function(coef.df, p.val.df, var, levels = NULL, level_ref = NULL
           axis.text = element_text(size = 16),
           axis.title = element_text(size = 18))
   
-  coef.df %>% pivot_longer(cols = names(coef.df), names_to = "var", values_to = "coeff") -> df2 
+  coef.df %>% tidyr::pivot_longer(cols = names(coef.df), names_to = "var", values_to = "coeff") -> df2 
   
   p2 <- ggplot()+
     geom_hline(yintercept = 0)+

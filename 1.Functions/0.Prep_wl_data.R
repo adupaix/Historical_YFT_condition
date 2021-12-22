@@ -77,24 +77,24 @@ prep_wl_data <- function(DATA_PATH,
                            ) %>%
       # add a column year
       # change the date column in class Date
-      mutate(year = year(as.Date(fish_sampling_date, format = "%Y-%m-%d")),
-             fish_sampling_date = as.Date(fish_sampling_date, format = "%Y-%m-%d"),
-             fishing_date = as.Date(fishing_date, format = "%Y-%m-%d"),
-             fishing_date_min = as.Date(fishing_date_min, format = "%Y-%m-%d"),
-             fishing_date_max = as.Date(fishing_date_max, format = "%Y-%m-%d"),
-             landing_date = as.Date(landing_date, format = "%Y-%m-%d")) %>%
+      dplyr::mutate(year = year(as.Date(fish_sampling_date, format = "%Y-%m-%d")),
+                    fish_sampling_date = as.Date(fish_sampling_date, format = "%Y-%m-%d"),
+                    fishing_date = as.Date(fishing_date, format = "%Y-%m-%d"),
+                    fishing_date_min = as.Date(fishing_date_min, format = "%Y-%m-%d"),
+                    fishing_date_max = as.Date(fishing_date_max, format = "%Y-%m-%d"),
+                    landing_date = as.Date(landing_date, format = "%Y-%m-%d")) %>%
       # change the lengths to numeric
-      mutate(fork_length = as.numeric(gsub(",",".", fork_length)),
-             total_length = as.numeric(gsub(",",".", total_length)),
-             first_dorsal_length = as.numeric(gsub(",",".", first_dorsal_length))) %>%
+      dplyr::mutate(fork_length = as.numeric(gsub(",",".", fork_length)),
+                    total_length = as.numeric(gsub(",",".", total_length)),
+                    first_dorsal_length = as.numeric(gsub(",",".", first_dorsal_length))) %>%
       # change the weights to numeric
-      mutate(whole_fish_weight = as.numeric(gsub(",",".", whole_fish_weight)),
-             gonad_total_weight = as.numeric(gsub(",",".", gonad_total_weight)),
-             liver_weight = as.numeric(gsub(",",".", liver_weight))) %>%
+      dplyr::mutate(whole_fish_weight = as.numeric(gsub(",",".", whole_fish_weight)),
+                    gonad_total_weight = as.numeric(gsub(",",".", gonad_total_weight)),
+                    liver_weight = as.numeric(gsub(",",".", liver_weight))) %>%
       # keep only data for which a length was measured
       dplyr::filter(!is.na(fork_length) | !is.na(total_length) | !is.na(first_dorsal_length)) %>%
       # add a column to follow where the fork length comes from
-      mutate(fl_origin = as.factor(ifelse(!is.na(fork_length), "measured", "deduced"))) -> data
+      dplyr::mutate(fl_origin = as.factor(ifelse(!is.na(fork_length), "measured", "deduced"))) -> data
     
     # add a column containing the size_class
     data$size_class <- NA
@@ -147,8 +147,8 @@ prep_wl_data <- function(DATA_PATH,
     
     if (getgeom){
       
-      data %>% mutate(geom_type = gsub("[^[:alpha:]]", "", as.character(geometry)),
-                      geom_coord = gsub("[[:alpha:]]", "", as.character(geometry))) -> data
+      data %>% dplyr::mutate(geom_type = gsub("[^[:alpha:]]", "", as.character(geometry)),
+                             geom_coord = gsub("[[:alpha:]]", "", as.character(geometry))) -> data
       
       sample_size = 1000
       niter <- floor(dim(data)[1]/sample_size) + 1
