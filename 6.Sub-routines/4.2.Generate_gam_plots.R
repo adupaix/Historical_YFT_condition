@@ -64,7 +64,8 @@ if (part == 1){
     pc1 <- qqplot.gam(residuals(gam1))
   }
   
-  ggsave(diagnoPlotNames, pc1, width = 100, height = 100, units = "mm", dpi = "retina")
+  # ggsave(diagnoPlotNames, pc1, width = 100, height = 100, units = "mm", dpi = "retina")
+  saveRDS(pc1, diagnoPlotNames)
   
   #'****************************************
   #' Plots of the GAM latlong smooth term
@@ -101,7 +102,7 @@ if (part == 1){
     )
       
     if (fad_fsc){
-      ct_int_pred$fishing_mode <- "DFAD"
+      ct_int_pred$fishing_mode <- "FOB"
     }
       
     ct_int_pred <- predict(gam1, newdata = ct_int_pred, 
