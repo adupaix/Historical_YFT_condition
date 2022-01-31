@@ -48,7 +48,7 @@ list2env(arguments, envir = .GlobalEnv)
 source(file.path(FUNC_PATH, "install_libraries.R"))
 
 srcUsedPackages <- c("plyr", "dplyr","tidyr","lubridate","sf", "ggplot2","tibble",
-                     "cowplot","RColorBrewer", "MASS","truncnorm", "mgcv", "abind")
+                     "cowplot","RColorBrewer", "MASS", "mgcv", "abind")
 
 installAndLoad_packages(srcUsedPackages, loadPackages = TRUE, verbose = F)
 
@@ -437,6 +437,7 @@ if (size_class_for_model == 'all'){
 }
 
 if (fad_fsc == T & fishing_mode_for_model == "all"){
+  data$fishing_mode[which(data$fishing_mode == "DFAD")] <- "FOB"
   lev <- levels(data$fishing_mode)
   p4 <- plot.coef.df(coef.df, p.val.df, "fishing_mode",
                      levels = lev, level_ref = ref_var_values$fishing_mode,

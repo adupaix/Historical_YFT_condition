@@ -143,7 +143,7 @@ if (fishing_mode_for_model == "all"){
   p3 <- figure2(data = data_fig,
                 var.to.compare = "Kn",
                 var.grp = "fishing_mode",
-                levels.var.grp = c("DFAD","FSC"),
+                levels.var.grp = c("FOB","FSC"),
                 var.x = "fishing_year",
                 scale.color.title = "School\n type",
                 xlabel = "Year",

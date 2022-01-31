@@ -53,6 +53,9 @@ if (VERBOSE){
   msg <- "\n\n~~~~ Calculating Kn ~~~~\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
 }
 
+# replace DFAD by FOB in fishing_mode
+data$fishing_mode[which(data$fishing_mode == "DFAD")] <- "FOB"
+
 #' @filter species of interest, caught by purse seiner
 data %>% dplyr::filter(species_code_fao %in% species & gear_code == "PS") -> data
 

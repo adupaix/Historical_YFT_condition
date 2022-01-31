@@ -38,7 +38,7 @@ if (year_by_groups){
 }
 
 if (fad_fsc == T){
-  data %>% dplyr::filter(fishing_mode %in% c("DFAD","FSC")) %>%
+  data %>% dplyr::filter(fishing_mode %in% c("FOB","FSC")) %>%
     dplyr::mutate(fishing_mode = as.factor(fishing_mode)) -> data
 }
 if (fishing_mode_for_model != 'all'){
