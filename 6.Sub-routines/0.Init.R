@@ -17,7 +17,7 @@ list2env(arguments, .GlobalEnv)
 source(file.path(FUNC_PATH, "install_libraries.R"))
 
 srcUsedPackages <- c("plyr", "dplyr","tidyr","lubridate","sf", "ggplot2","tibble",
-                     "cowplot","RColorBrewer", "MASS","truncnorm", "mgcv", "spdep",
+                     "cowplot","RColorBrewer", "MASS", "mgcv", "spdep",
                      "doSNOW")
 
 if (cluster == F){srcUsedPackages <- c(srcUsedPackages, "gratia", "parallel")} else {Parallel[1] <- F ; VERBOSE <- F ; generate_plots <- F}

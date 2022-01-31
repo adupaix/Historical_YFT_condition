@@ -44,7 +44,7 @@ seed.i <- seeds[i]
 source(file.path(FUNC_PATH, "install_libraries.R"))
 
 srcUsedPackages <- c("plyr", "dplyr","tidyr","lubridate","sf", "ggplot2","tibble",
-                     "cowplot","RColorBrewer", "MASS","truncnorm", "mgcv", "spdep",
+                     "cowplot","RColorBrewer", "MASS", "mgcv", "spdep",
                      "doSNOW")
 
 # if we execute this script, cluster == T, no need to test it
