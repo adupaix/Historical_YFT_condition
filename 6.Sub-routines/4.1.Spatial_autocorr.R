@@ -49,17 +49,20 @@ if (part == 1){
       msg <- "\n      - Performing Moran's I tests" ; cat(msg)
     }
     mc[[k]] <- moran.mc(subdata$Kn, listw = listw[[k]], nsim = 99, zero.policy = T)
-    test[[k]] <- moran.test(subdata$Kn, listw = listw[[k]], zero.policy = T) 
+    # test[[k]] <- moran.test(subdata$Kn, listw = listw[[k]], zero.policy = T) 
     
   }
   
   morans.mc <- unlist(lapply(mc, function(x) x$statistic))
-  morans.test <- unlist(lapply(test, function(x) x$estimate[1]))
+  # morans.test <- unlist(lapply(test, function(x) x$estimate[1]))
   
-  toplot <- data.frame(d = rep(c, 2),
-                       I = c(morans.mc, morans.test),
-                       moran_type = c(rep("Kn mc",length(c)),
-                                      rep("Kn test",length(c))))
+  # toplot <- data.frame(d = rep(c, 2),
+  #                      I = c(morans.mc, morans.test),
+  #                      moran_type = c(rep("Kn mc",length(c)),
+  #                                     rep("Kn test",length(c))))
+  toplot <- data.frame(d = c,
+                       I = morans.mc,
+                       moran_type = rep("Kn",length(c)))
   
 } else if (part == 2){
   
@@ -79,18 +82,21 @@ if (part == 1){
       msg <- "\n      - Performing Moran's I tests" ; cat(msg)
     }
     mc_gam1[[k]] <- moran.mc(resid(gam1)[to_sample], listw = listw[[k]], nsim = 99, zero.policy = T)
-    test_gam1[[k]] <- moran.test(resid(gam1)[to_sample], listw = listw[[k]], zero.policy = T) 
+    # test_gam1[[k]] <- moran.test(resid(gam1)[to_sample], listw = listw[[k]], zero.policy = T)
     
   }
   
   morans.mc.res <- unlist(lapply(mc_gam1, function(x) x$statistic))
-  morans.test.res <- unlist(lapply(test_gam1, function(x) x$estimate[1]))
+  # morans.test.res <- unlist(lapply(test_gam1, function(x) x$estimate[1]))
   
   #' @2.2 Generate plot
-  toplot2 <- data.frame(d = rep(c, 2),
-                        I = c(morans.mc.res, morans.test.res),
-                        moran_type = c(rep("GAM residuals mc",length(c)),
-                                       rep("GAM residuals test",length(c))))
+  # toplot2 <- data.frame(d = rep(c, 2),
+  #                       I = c(morans.mc.res, morans.test.res),
+  #                       moran_type = c(rep("GAM residuals mc",length(c)),
+  #                                      rep("GAM residuals test",length(c))))
+  toplot2 <- data.frame(d = c,
+                        I = morans.mc.res,
+                        moran_type = rep("GAM residuals",length(c)))
   
   bind_rows(toplot, toplot2) -> toplot
   
@@ -100,9 +106,10 @@ if (part == 1){
     xlab("Distance (km)")+
     ylab("Moran's I")
   
-  ggsave(moranPlotName, p_moran_residuals)
+  saveRDS(p_moran_residuals, moranPlotName)
   
-  rm(mc, test, nb_list, listw, part) ; invisible(gc())
+  # rm(mc, test, nb_list, listw, part) ; invisible(gc())
+  rm(mc, mc_gam1, nb_list, listw, part) ; invisible(gc())
   
 }
 

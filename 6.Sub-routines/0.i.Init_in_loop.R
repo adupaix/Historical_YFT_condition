@@ -30,8 +30,8 @@ if (generate_plots){
 }
 
 try(dir.create(file.path(OUTPUT_PATH, seed.i), showWarnings = F, recursive = T))
-diagnoPlotNames <- file.path(OUTPUT_PATH, seed.i, "diagn_gam.png")
-moranPlotName <- file.path(OUTPUT_PATH, seed.i, "Moran_I_plot.png")
+diagnoPlotNames <- file.path(OUTPUT_PATH, seed.i, "diagn_gam.rds")
+moranPlotName <- file.path(OUTPUT_PATH, seed.i, "Moran_I_plot.rds")
 
 gamSummary <- file.path(OUTPUT_PATH, seed.i, "gam.rds")
 summaryName <- file.path(OUTPUT_PATH, seed.i, "Processing_summary.txt")
