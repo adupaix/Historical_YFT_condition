@@ -16,6 +16,11 @@ geary.hinkley.transform <- function(Z,X,Y, cor.method = "pearson"){
   (mean(Y)*Z - mean(X))/(sqrt(sd(Y)^2*Z^2-2*cor(X,Y, method = cor.method)*sd(X)*sd(Y)*Z + sd(X)^2))
 }
 
+back.transform <- function(x, correspondance){
+  correspondance %>% mutate(above = x > T.Kn) -> correspondance
+  return(correspondance[which(correspondance$above != lag(correspondance$above)),]$Kn)
+}
+
 
 get.coeff <- function(gam, var, type = c("coeff","se","p.value")){
   if(type == "coeff"){
