@@ -60,6 +60,9 @@ argsName <- file.path(OUTPUT_PATH, "README.rds")
 
 summaryName <- file.path(OUTPUT_PATH, "Processing_summary.txt")
 
+# names of the fit of the allometrique law
+allomSummaryName <- file.path(OUTPUT_PATH, "Fit_allometric_law_summary.txt")
+allomFitName <- file.path(OUTPUT_PATH, "Fit_allometric_law_plot.png")
 
 # Initialize data processing summary and generate README.txt
 sink(summaryName)

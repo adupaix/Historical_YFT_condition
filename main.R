@@ -67,6 +67,34 @@ if (allom == "Chassot2015"){
   b = lm(log(whole_fish_weight) ~ log(fork_length), data = data)$coefficients[2]
 }
 
+if(allom == "fromData"){
+  lmodel <- lm(log(whole_fish_weight) ~ log(fork_length), data = data)
+  sink(allomSummaryName)
+  cat("\n\nSummary of the fit of the allometric relationship")
+  cat("\n---------------------------------------------------\n")
+  cat("\na =", a)
+  cat("\nb =", b)
+  cat("\nr-square :", summary(lmodel)$r.squared)
+  cat("\nFish weight ranged from", min(data$whole_fish_weight),
+      "kg for a", min(data$fork_length[which(data$whole_fish_weight == min(data$whole_fish_weight))]),
+      "cm fish, to", max(data$whole_fish_weight),
+      "kg for a", data$fork_length[which(data$whole_fish_weight == max(data$whole_fish_weight))],
+      "cm fish.\nThe average size was", mean(data$fork_length), "cm (SD =", sd(data$fork_length),
+      ") and the average weight was", mean(data$whole_fish_weight), "kg (SD =", sd(data$whole_fish_weight), ").")
+  sink()
+  
+  x <- seq(min(data$fork_length),max(data$fork_length), 0.1)
+  y <- a*x^b
+  
+  p <- ggplot()+
+    geom_point(data=data, aes(x=fork_length, y=whole_fish_weight), col = "grey40", alpha = 0.5)+
+    geom_line(aes(x=x,y=y), col = "red")+
+    labs(x = "Fork length (cm)",
+         y = "Fish weight (kg)")
+  
+  ggsave(filename = allomFitName, p)
+}
+
 data %>%
   dplyr::mutate(weight_th = a*fork_length^b,
                 Kn = whole_fish_weight / weight_th) -> data
