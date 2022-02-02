@@ -85,9 +85,16 @@ figure2 <- function(data, var.to.compare, var.grp, levels.var.grp, var.x,
       (x %>% dplyr::filter(!!rlang::sym(var.grp) == levels.var.grp[2]))$m
   }) -> data_hist
   
+  # p3.2 <- ggplot(data_hist, aes(x = as.factor(!!rlang::sym(var.x)), y = V1))+
+  #   geom_bar(stat = "identity")+
+  #   theme(axis.text.x = element_text(angle = 90, colour = axis_col, face = axis_face),
+  #         panel.border = element_rect(color = "black", fill = NA))+
+  #   ylab(paste0(var.to.compare," (",levels.var.grp[1],") - ", var.to.compare," (",levels.var.grp[2],")"))+
+  #   xlab(xlabel)
+  
   p3.2 <- ggplot(data_hist, aes(x = as.factor(!!rlang::sym(var.x)), y = V1))+
     geom_bar(stat = "identity")+
-    theme(axis.text.x = element_text(angle = 90, colour = axis_col, face = axis_face),
+    theme(axis.text.x = element_text(angle = 90),
           panel.border = element_rect(color = "black", fill = NA))+
     ylab(paste0(var.to.compare," (",levels.var.grp[1],") - ", var.to.compare," (",levels.var.grp[2],")"))+
     xlab(xlabel)
