@@ -1,29 +1,46 @@
+#'#*******************************************************************************************************************
+#'@author : Amael DUPAIX
+#'@update : 2021-11-17
+#'@email : amael.dupaix@ens-lyon.fr
+#'#*******************************************************************************************************************
+#'@description :  Function to prepare the dataset (apply first filters, etc)
+#'#*******************************************************************************************************************
+#'@revisions
+#'#*******************************************************************************************************************
 
 prep_wl_data <- function(DATA_PATH,
                          data,
                          calcfdl = TRUE,
                          calcfdl.sd_max = 5, calcfdl.spl_size = 100,
                          read = TRUE,
-                         getgeom = FALSE,
+                         getgeom = TRUE, # rest from before, in this study getgeom is always set to T
                          ncores = 1,
-                         summaryName){
+                         size_class_levels,
+                         summaryName,
+                         verbose = F){
   
-  msg <- "\n~~~~ Preparing weight-length data ~~~~\n\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+  if (verbose){
+    if (!"lines.to.cat" %in% ls(envir = .GlobalEnv)){lines.to.cat <<- "\14"}
+    msg <- "\n\n~~~~ Preparing weight-length data ~~~~\n\n" ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
+  }
   
   preped_file <- file.path(DATA_PATH,"preped_wl_data")
   
-  if (calcfdl == TRUE){
+  if (calcfdl){
     preped_file <- paste0(preped_file, "_calcfdl")
   }
-  if (getgeom == T){
+  if (getgeom){
     preped_file <- paste0(preped_file, "_geom")
   }
+  preped_file <- paste0(preped_file, "_sc", paste(size_class_levels, collapse = "."))
   
   preped_file <- paste0(preped_file, ".rds")
   
   
-  if (file.exists(preped_file) & read == TRUE){
-    msg <- paste("  ~~~ Reading prepared data file from ",preped_file,"\n") ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+  if (file.exists(preped_file) & read){
+    if (verbose){
+      msg <- paste("  ~~~ Reading prepared data file from ",preped_file,"\n") ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
+    }
     data <- readRDS(preped_file)
     
     sink(summaryName, append = T)
@@ -37,7 +54,9 @@ prep_wl_data <- function(DATA_PATH,
     cat("- Total number of entries:", N1)
     sink()
     
-    msg <- "  ~~~ Applying first filters\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+    if (verbose){
+      msg <- "  ~~~ Applying first filters\n" ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
+    }
     
     ## select the variables of interest
     data %>% dplyr::select(fish_identifier, ocean_code, quadrant, gear_code,
@@ -58,55 +77,78 @@ prep_wl_data <- function(DATA_PATH,
                            ) %>%
       # add a column year
       # change the date column in class Date
-      mutate(year = year(as.Date(fish_sampling_date, format = "%Y-%m-%d")),
-             fish_sampling_date = as.Date(fish_sampling_date, format = "%Y-%m-%d"),
-             fishing_date = as.Date(fishing_date, format = "%Y-%m-%d"),
-             fishing_date_min = as.Date(fishing_date_min, format = "%Y-%m-%d"),
-             fishing_date_max = as.Date(fishing_date_max, format = "%Y-%m-%d"),
-             landing_date = as.Date(landing_date, format = "%Y-%m-%d")) %>%
+      dplyr::mutate(year = year(as.Date(fish_sampling_date, format = "%Y-%m-%d")),
+                    fish_sampling_date = as.Date(fish_sampling_date, format = "%Y-%m-%d"),
+                    fishing_date = as.Date(fishing_date, format = "%Y-%m-%d"),
+                    fishing_date_min = as.Date(fishing_date_min, format = "%Y-%m-%d"),
+                    fishing_date_max = as.Date(fishing_date_max, format = "%Y-%m-%d"),
+                    landing_date = as.Date(landing_date, format = "%Y-%m-%d")) %>%
       # change the lengths to numeric
-      mutate(fork_length = as.numeric(gsub(",",".", fork_length)),
-             total_length = as.numeric(gsub(",",".", total_length)),
-             first_dorsal_length = as.numeric(gsub(",",".", first_dorsal_length))) %>%
+      dplyr::mutate(fork_length = as.numeric(gsub(",",".", fork_length)),
+                    total_length = as.numeric(gsub(",",".", total_length)),
+                    first_dorsal_length = as.numeric(gsub(",",".", first_dorsal_length))) %>%
       # change the weights to numeric
-      mutate(whole_fish_weight = as.numeric(gsub(",",".", whole_fish_weight)),
-             gonad_total_weight = as.numeric(gsub(",",".", gonad_total_weight)),
-             liver_weight = as.numeric(gsub(",",".", liver_weight))) %>%
+      dplyr::mutate(whole_fish_weight = as.numeric(gsub(",",".", whole_fish_weight)),
+                    gonad_total_weight = as.numeric(gsub(",",".", gonad_total_weight)),
+                    liver_weight = as.numeric(gsub(",",".", liver_weight))) %>%
       # keep only data for which a length was measured
       dplyr::filter(!is.na(fork_length) | !is.na(total_length) | !is.na(first_dorsal_length)) %>%
       # add a column to follow where the fork length comes from
-      mutate(fl_origin = as.factor(ifelse(!is.na(fork_length), "measured", "deduced"))) -> data
-
+      dplyr::mutate(fl_origin = as.factor(ifelse(!is.na(fork_length), "measured", "deduced"))) -> data
+    
+    # add a column containing the size_class
+    data$size_class <- NA
+    for (k in 1:length(size_class_levels)){
+      if (k == 1){
+        data$size_class[which(data$fork_length <= as.numeric(sub("<", "", size_class_levels[k])))] <- size_class_levels[k]
+      } else if (k == length(size_class_levels)){
+        data$size_class[which(data$fork_length > as.numeric(sub(">", "", size_class_levels[k])))] <- size_class_levels[k]
+      } else {
+        data$size_class[which(data$fork_length > as.numeric(sub("-.*", "", size_class_levels[k])) &
+                                data$fork_length <= as.numeric(sub(".*-", "", size_class_levels[k])))] <- size_class_levels[k]
+      }
+    }
+    data$size_class <- as.factor(data$size_class)
+    
     N2 <- dim(data)[1]
-    msg <- "    - Deleted data with no length measurement\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+    if (verbose){
+      msg <- "    - Deleted data with no length measurement\n" ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
+    }
     
     
     data %>% dplyr::filter(!is.na(whole_fish_weight)) -> data
     N3 <- dim(data)[1]
-    msg <- "    - Deleted data with no weight measurement\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
-    
+    if (verbose){
+      msg <- "    - Deleted data with no weight measurement\n" ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
+    }
     
     data %>% dplyr::filter(ocean_code == "IO") -> data
     N4 <- dim(data)[1]
-    msg <- "    - Deleted data of fish not from the IO\n\n" ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
+    if (verbose){
+      msg <- "    - Deleted data of fish not from the IO\n\n" ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
     
+      msg <- paste("~~~ Sampling missing FL values among other individuals with the same FDL: ",calcfdl,"\n") ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
+    }
     
-    msg <- paste("~~~ Sampling missing FL values among other individuals with the same FDL: ",calcfdl,"\n") ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
-    if (calcfdl == TRUE){
-      data <- calc_FL_from_FDL(data, sd_max = calcfdl.sd_max, spl_size_min = calcfdl.spl_size)
+    if (calcfdl){
+      data <- calc_FL_from_FDL(data, sd_max = calcfdl.sd_max, spl_size_min = calcfdl.spl_size, verbose = verbose)
     } else{
-      msg <- paste("    - Number of deleted entries (no fork length available):",sum(is.na(data$fork_length)), "\n\n") ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
-      
+      if (verbose){
+        msg <- paste("    - Number of deleted entries (no fork length available):",sum(is.na(data$fork_length)), "\n\n") ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
+      }
       data %>% dplyr::filter(!is.na(fork_length)) -> data
     }
     
     N5 <- dim(data)[1]
     
-    msg <- "  ~~~ Getting geometry information from str: " ; cat(msg) ; lines.to.cat <- c(lines.to.cat, msg)
-    if (getgeom == TRUE){
+    if (verbose){
+      msg <- "  ~~~ Getting geometry information from str: " ; cat(msg) ; lines.to.cat <<- c(lines.to.cat, msg)
+    }
+    
+    if (getgeom){
       
-      data %>% mutate(geom_type = str_replace_all(as.character(geometry), "[^[:alpha:]]", ""),
-                      geom_coord = str_replace_all(as.character(geometry), "[[:alpha:]]", "")) -> data
+      data %>% dplyr::mutate(geom_type = gsub("[^[:alpha:]]", "", as.character(geometry)),
+                             geom_coord = gsub("[[:alpha:]]", "", as.character(geometry))) -> data
       
       sample_size = 1000
       niter <- floor(dim(data)[1]/sample_size) + 1
@@ -120,8 +162,10 @@ prep_wl_data <- function(DATA_PATH,
       #'      several "cores" (the number of R processes running at the same time is > 4...)
       for (k in 1:niter){
         
-        cat(lines.to.cat)
-        cat("    Sub-sample ",k,"/",niter, "\n")
+        if (verbose){
+          cat(lines.to.cat)
+          cat("    Sub-sample ",k,"/",niter, "\n")
+        }
         
         if(k == niter){
           indexes <- ((k-1)*sample_size+1):(dim(data)[1])
@@ -134,15 +178,19 @@ prep_wl_data <- function(DATA_PATH,
         cl <- makeCluster(ncores)
         doSNOW::registerDoSNOW(cl)
         
-        pb <- txtProgressBar(min = 1, max = dim(sub_data)[1], style = 3)
-        progress <- function(n) setTxtProgressBar(pb, n)
-        opts <- list(progress = progress)
+        if (VERBOSE){
+          pb <- txtProgressBar(min = 1, max = dim(sub_data)[1], style = 3)
+          progress <- function(n) setTxtProgressBar(pb, n)
+          opts <- list(progress = progress)
+        } else {
+          opts <- list()
+        }
         
         data_list[[k]] <- foreach(i = 1:dim(sub_data)[1],
                                   .combine = dplyr::bind_rows,
                                   .options.snow = opts,
                                   .multicombine = F,
-                                  .packages = c("stringr","sf", "dplyr")) %dopar% {
+                                  .packages = c("sf", "dplyr")) %dopar% {
                           
                           # extract one line of the data
                           data.i <- sub_data[i,]
@@ -176,7 +224,9 @@ prep_wl_data <- function(DATA_PATH,
                           
                         }
         
-        close(pb)
+        if (VERBOSE){
+          close(pb)
+        }
         
         foreach::registerDoSEQ()
         
@@ -204,19 +254,21 @@ prep_wl_data <- function(DATA_PATH,
     
   }
   
-  return(list(data, lines.to.cat))
+  return(data)
   
 }
 
 #%############
 
-calc_FL_from_FDL <- function(data, sd_max = 5, spl_size_min = 100){
+calc_FL_from_FDL <- function(data, sd_max = 5, spl_size_min = 100, verbose = F){
   
   data %>%
     dplyr::filter(is.na(fork_length)) %>%
     dplyr::filter(species_code_fao != "SKJ") -> fdl_no_fl
   
-  cat(paste("    Number of values to deduce:", dim(fdl_no_fl)[1], "\n"))
+  if (verbose){
+    cat(paste("    Number of values to deduce:", dim(fdl_no_fl)[1], "\n"))
+  }
   
   # df with both FL and FDL measured
   data %>% dplyr::filter(!is.na(first_dorsal_length) & !is.na(fork_length)) -> both_l
@@ -243,7 +295,9 @@ calc_FL_from_FDL <- function(data, sd_max = 5, spl_size_min = 100){
   
   data %>% dplyr::filter(fl_origin == "deduced") -> res
   
-  cat(paste("    Number of deleted entries (no replacement found):",sum(is.na(res$fork_length)), "\n")) ## -> 661 values of FL not replaced (sd_max = 5, spl_size_min = 100)
+  if (verbose){
+    cat(paste("    Number of deleted entries (no replacement found):",sum(is.na(res$fork_length)), "\n")) ## -> 661 values of FL not replaced (sd_max = 5, spl_size_min = 100)
+  }
   
   data %>% dplyr::filter(!is.na(fork_length)) -> data
   

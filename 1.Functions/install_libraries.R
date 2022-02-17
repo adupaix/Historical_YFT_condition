@@ -4,7 +4,8 @@
 #'
 #' @param srcUsedPackages : require packages
 #' @param loadPackages : load or not after installation
-installAndLoad_packages <-function(srcUsedPackages = srcUsedPackages, loadPackages =TRUE)
+installAndLoad_packages <-function(srcUsedPackages = srcUsedPackages, loadPackages =TRUE,
+                                   verbose = F)
 {
   #---Installed packages
   userPackages <- as.data.frame(installed.packages())
@@ -13,12 +14,15 @@ installAndLoad_packages <-function(srcUsedPackages = srcUsedPackages, loadPackag
   neededPackages <- srcUsedPackages[!srcUsedPackages %in% userPackages$Package]
   
   #---Download and installing packages
-  cat("Installing  and Loading of required packages....\n")
+  if (verbose){
+    cat("Installing  and Loading of required packages....\n")
+  }
   if(length(neededPackages) > 0)
   {
     for(i in 1:length(neededPackages))
     {
-      install.packages(neededPackages[i], quiet = TRUE, verbose = TRUE)
+      install.packages(neededPackages[i], quiet = TRUE, verbose = TRUE,
+                       repos = "http://cran.us.r-project.org")
     }
   }
   correclty_installed <- srcUsedPackages[srcUsedPackages %in% userPackages$Package]
@@ -34,7 +38,7 @@ installAndLoad_packages <-function(srcUsedPackages = srcUsedPackages, loadPackag
     notLoaded <- NA
     for(i in 1: length(correclty_installed))
     {
-      res <- library(package = eval(correclty_installed[i]), character.only = TRUE, logical.return = TRUE, quietly = TRUE)
+      res <- library(package = eval(correclty_installed[i]), character.only = TRUE, logical.return = TRUE, quietly = TRUE, warn.conflicts = FALSE)
       if(res == FALSE)
       {
         notLoaded <- na.omit(c(notLoaded, correclty_installed[i]))

@@ -3,3 +3,7 @@
 3.Outputs
 .Rproj.user
 .Rhistory
+*.Rproj
+cfg/*
+!cfg/cfg_template.R
+!cfg/job_template.pbs
