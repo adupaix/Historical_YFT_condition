@@ -20,7 +20,8 @@
 figure2 <- function(data, var.to.compare, var.grp, levels.var.grp, var.x,
                     scale.color.title = "School\n type",
                     xlabel = "Year",
-                    vline = 0
+                    vline = 0,
+                    with.second.panel = T
 ){
   
   data %>% dplyr::filter((!!rlang::sym(var.grp)) %in% levels.var.grp) %>%
@@ -109,6 +110,10 @@ figure2 <- function(data, var.to.compare, var.grp, levels.var.grp, var.x,
     draw_plot(p3.2, 0, 0, 1, 1/3)+
     draw_plot_label(c("A","B"), c(0,0), c(1,1/3))
   
-  return(p3)
+  if (with.second.panel){
+    return(p3)
+  } else {
+    return(p3.1)
+  }
   
 }
