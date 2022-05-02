@@ -150,5 +150,5 @@ if (fishing_mode_for_model == "all"){
                 vline = c(1.5,2.5),
                 with.second.panel = F)
   
-  ggsave(fig2Name, p3, width = 12, height = 8)
+  ggsave(fig2Name, p3, width = 10, height = 6)
 }

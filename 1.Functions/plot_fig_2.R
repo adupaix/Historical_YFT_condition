@@ -73,13 +73,20 @@ figure2 <- function(data, var.to.compare, var.grp, levels.var.grp, var.x,
     scale_color_brewer(scale.color.title, palette = "Set1")+
     geom_point()+
     geom_errorbar(aes(ymin = m - se, ymax = m + se), width = 0.25, size = 0.5)+
-    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
-          axis.ticks.x = element_blank(),
+    theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust=1),
           panel.border = element_rect(color = "black", fill = NA),
           legend.justification = c(1,0),
           legend.position = c(0.9,0.1),
           legend.background = element_rect(colour = "black"))+
-    ylab(paste("Mean", var.to.compare))
+    ylab(paste("Mean", var.to.compare))+
+    xlab("Fishing year")
+  
+  if(with.second.panel){
+    p3.1 <- p3.1 +
+      theme(axis.text.x = element_blank(),
+            axis.title.x = element_blank(),
+            axis.ticks.x = element_blank())
+  }
   
   toplot %>% plyr::ddply(.variables = var.x, .fun = function(x){
     (x %>% dplyr::filter(!!rlang::sym(var.grp) == levels.var.grp[1]))$m -
