@@ -147,7 +147,8 @@ if (fishing_mode_for_model == "all"){
                 var.x = "fishing_year",
                 scale.color.title = "School\n type",
                 xlabel = "Year",
-                vline = c(1.5,2.5))
+                vline = c(1.5,2.5),
+                with.second.panel = F)
   
-  ggsave(fig2Name, p3, width = 7, height = 10)
+  ggsave(fig2Name, p3, width = 10, height = 6)
 }
