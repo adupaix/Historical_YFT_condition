@@ -4,7 +4,7 @@
 [![DOI](https://zenodo.org/badge/416344484.svg)](https://zenodo.org/badge/latestdoi/416344484)
 [![Latest Release](https://img.shields.io/github/release/adupaix/Historical_YFT_condition)](https://github.com/adupaix/Historical_YFT_condition/releases)
 
-This repository contains all the scripts to run the analysis performed in the submitted manuscript:
+This repository contains all the scripts to run the analysis performed in the manuscript submitted to Ecology Letters:
 
 Dupaix A., Dagorn L., Deneubourg J-L., Duparc A., Guillou A., Capello M. (in press). Fish Aggregating Devices (FADs) as ecological traps: no evidence displayed by a long-term analysis of yellowfin tuna condition.
 
@@ -16,7 +16,7 @@ The scripts run with [R version 4.0.3](https://www.r-project.org/) (R Core Team,
 
 The [conda](https://docs.conda.io/projects/conda/en/latest/) environment to run the model is provided. To create, type : `conda env create -f r-tuna-condition.yml`
 
-Templates of the config files are provided: `cfg/job_template.pbs` (to run the bootstrap on a cluster) and `cfg/cfg_template.R`. Config files used to obtain the results of the study are available in `cfg/paper_cfgs`.
+Templates of the config files are provided: `cfg/job_template.pbs` (to run the bootstrap on a cluster) and `cfg/cfg_template.R`. Config files used to obtain the results of the study are available in `cfg/paper_cfgs.zip`.
 
 Outputs obtained with `.pbs` files are then used to run `main_post_cluster.R`
 
