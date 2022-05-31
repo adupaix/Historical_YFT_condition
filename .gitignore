@@ -7,4 +7,4 @@
 cfg/*
 !cfg/cfg_template.R
 !cfg/job_template.pbs
-!cfg/paper_cfgs
+!cfg/paper_cfgs.zip
