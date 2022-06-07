@@ -1,12 +1,12 @@
-# Fish Aggregating Devices (FADs) as ecological traps: no evidence displayed by a long-term analysis of yellowfin tuna condition
+# Assessing an ecological trap using long-term condition data: case study on yellowfin tuna and Drifting Fish Aggregating Devices (DFADs)
 
 [![License](https://img.shields.io/github/license/adupaix/Historical_YFT_condition)](https://github.com/adupaix/Historical_YFT_condition/blob/master/LICENSE)
 [![DOI](https://zenodo.org/badge/416344484.svg)](https://zenodo.org/badge/latestdoi/416344484)
 [![Latest Release](https://img.shields.io/github/release/adupaix/Historical_YFT_condition)](https://github.com/adupaix/Historical_YFT_condition/releases)
 
-This repository contains all the scripts to run the analysis performed in the manuscript submitted to Ecology Letters:
+This repository contains all the scripts to run the analysis performed in the manuscript submitted to *Proceedings of the Royal Society B - Biological Sciences*:
 
-Dupaix A., Dagorn L., Deneubourg J-L., Duparc A., Guillou A., Capello M. (in press). Fish Aggregating Devices (FADs) as ecological traps: no evidence displayed by a long-term analysis of yellowfin tuna condition.
+Dupaix A., Dagorn L., Deneubourg J-L., Duparc A., Guillou A., Capello M. (in press). Assessing an ecological trap using long-term condition data: case study on yellowfin tuna and Drifting Fish Aggregating Devices (DFADs).
 
 Please contact me if you have any question (amael.dupaix@ird.fr).
 
