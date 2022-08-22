@@ -1,4 +1,4 @@
-name: /home1/datahome/adupaix/conda/r-tuna-condition
+name: r-tuna-condition
 channels:
   - conda-forge
   - defaults
@@ -12,7 +12,7 @@ dependencies:
   - bwidget=1.9.14=ha770c72_1
   - bzip2=1.0.8=h7f98852_4
   - c-ares=1.18.1=h7f98852_0
-  - ca-certificates=2021.10.8=ha878542_0
+  - ca-certificates=2022.6.15=ha878542_0
   - cairo=1.16.0=h9f066cc_1006
   - cfitsio=3.470=hb418390_7
   - curl=7.71.1=he644dc0_3
@@ -125,6 +125,7 @@ dependencies:
   - r-codetools=0.2_18=r40hc72bb7e_0
   - r-colorspace=2.0_2=r40hcfec24a_0
   - r-conquer=1.2.1=r40h6dc32e9_0
+  - r-corrplot=0.92=r40hc72bb7e_0
   - r-cowplot=1.1.0=r40h6115d3f_0
   - r-cpp11=0.4.1=r40hc72bb7e_0
   - r-crayon=1.4.2=r40hc72bb7e_0
@@ -151,10 +152,15 @@ dependencies:
   - r-gdata=2.18.0=r40hc72bb7e_1003
   - r-generics=0.1.1=r40hc72bb7e_0
   - r-ggplot2=3.3.2=r40hc72bb7e_1
+  - r-ggpubr=0.4.0=r40hc72bb7e_0
+  - r-ggrepel=0.9.1=r40h03ef668_0
+  - r-ggsci=2.9=r40hc72bb7e_1003
+  - r-ggsignif=0.6.3=r40hc72bb7e_0
   - r-globals=0.14.0=r40hc72bb7e_0
   - r-glue=1.5.0=r40hcfec24a_0
   - r-gmodels=2.18.1=r40ha770c72_1003
   - r-gower=0.2.2=r40hcfec24a_0
+  - r-gridextra=2.3=r40hc72bb7e_1003
   - r-gtable=0.3.0=r40hc72bb7e_3
   - r-gtools=3.9.2=r40hcfec24a_0
   - r-haven=2.4.3=r40h2713e49_0
@@ -198,6 +204,7 @@ dependencies:
   - r-pkgconfig=2.0.3=r40hc72bb7e_1
   - r-pkgload=1.2.3=r40h03ef668_0
   - r-plyr=1.8.6=r40h03ef668_1
+  - r-polynom=1.4_1=r40hc72bb7e_0
   - r-praise=1.0.0=r40hc72bb7e_1004
   - r-prettyunits=1.1.1=r40hc72bb7e_1
   - r-proc=1.18.0=r40h03ef668_0
@@ -225,6 +232,7 @@ dependencies:
   - r-rlang=0.4.12=r40hcfec24a_0
   - r-rpart=4.1_15=r40hcfec24a_2
   - r-rprojroot=2.0.2=r40hc72bb7e_0
+  - r-rstatix=0.7.0=r40hc72bb7e_0
   - r-rstudioapi=0.13=r40hc72bb7e_0
   - r-scales=1.1.1=r40hc72bb7e_0
   - r-sf=0.9_5=r40h0fc35ea_2
@@ -283,4 +291,4 @@ dependencies:
   - xz=5.2.5=h516909a_1
   - zlib=1.2.11=h36c2ea0_1013
   - zstd=1.4.8=hdf46e1d_0
-prefix: /home1/datahome/adupaix/conda/r-tuna-condition
+prefix: /home/adupaix/anaconda3/envs/r-tuna-condition
