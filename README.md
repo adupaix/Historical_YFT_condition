@@ -4,9 +4,9 @@
 [![DOI](https://zenodo.org/badge/416344484.svg)](https://zenodo.org/badge/latestdoi/416344484)
 [![Latest Release](https://img.shields.io/github/release/adupaix/Historical_YFT_condition)](https://github.com/adupaix/Historical_YFT_condition/releases)
 
-This repository contains all the scripts to run the analysis performed in the manuscript submitted to *Proceedings of the Royal Society B - Biological Sciences*:
+This repository contains all the scripts to run the analysis performed in the manuscript submitted as a Short Communication to *Canadian Journal of Fisheries and Aquatic Sciences*:
 
-Dupaix A., Dagorn L., Deneubourg J-L., Duparc A., Guillou A., Capello M. (in press). Assessing an ecological trap using long-term condition data: case study on yellowfin tuna and Drifting Fish Aggregating Devices (DFADs).
+Dupaix A., Dagorn L., Deneubourg J-L., Duparc A., Guillou A., Capello M. (in press). Drifting Fish Aggregating Devices as ecological traps: no evidence displayed by a long-term analysis of yellowfin tuna condition.
 
 Please contact me if you have any question (amael.dupaix@ird.fr).
 
