@@ -4,7 +4,7 @@
 [![DOI](https://zenodo.org/badge/416344484.svg)](https://zenodo.org/badge/latestdoi/416344484)
 [![Latest Release](https://img.shields.io/github/release/adupaix/Historical_YFT_condition)](https://github.com/adupaix/Historical_YFT_condition/releases)
 
-This repository contains all the scripts to run the analysis performed in the manuscript submitted as a Short Communication to *Canadian Journal of Fisheries and Aquatic Sciences*:
+This repository contains all the scripts to run the analysis performed in the manuscript submitted as a Rapid Communication to *Canadian Journal of Fisheries and Aquatic Sciences*:
 
 Dupaix A., Dagorn L., Deneubourg J-L., Duparc A., Guillou A., Capello M. (in press). Drifting Fish Aggregating Devices as ecological traps: no evidence displayed by a long-term analysis of yellowfin tuna condition.
 
