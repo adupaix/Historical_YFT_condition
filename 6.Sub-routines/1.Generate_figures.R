@@ -5,7 +5,10 @@
 #'#*******************************************************************************************************************
 #'@description :  Script generating the 2 first figures
 #'#*******************************************************************************************************************
-#'@revisions
+#'@revisions :
+#' 2022/08/22: for submission as a Rapid communication in the Canadian Journal of Fisheries and Aquatic Science
+#'             the ggplot noted fig1 becomes the panel A of Figure 2
+#'             the ggplot noted fig2 is not used anymore
 #'#*******************************************************************************************************************
 
 
@@ -123,7 +126,7 @@ if (length(size_classes_fig1) != 0){
     xlab("Fishing year")
 }
 
-
+saveRDS(fig1, fig1rdsName)
 ggsave(fig1Name, fig1, width = 8, height = 6)
 
 # rm(data_by_class) ; invisible(gc())

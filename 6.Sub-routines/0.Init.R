@@ -49,6 +49,7 @@ if (generate_plots){
   fitName <- file.path(PLOT_PATH, "fit_lnorm_dates_goodnessoffit.png")
   histFitName <- file.path(PLOT_PATH, "fit_lnorm_dates.png")
   fig1Name <- file.path(PLOT_PATH, "Figure1.png")
+  fig1rdsName <- file.path(PLOT_PATH, "Figure1.rds")
   fig2Name <- file.path(PLOT_PATH, "Figure2.png")
 }
 
