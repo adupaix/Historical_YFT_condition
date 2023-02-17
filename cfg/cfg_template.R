@@ -131,16 +131,17 @@ arguments <- list(
   #' choose if the fishing mode is included in the GAM
   #' variables (T) or not (F)
   #' @for_study: both are used
-  #'             F for main study
+  #'             F for main study (Figure 2)
+  #'             T for Figures S2 & S3
   fad_fsc = F,
   
   #' choose if the model is performed on all the individuals
   #' or only on one of the fishing modes
-  #' one of "all", "DFAD", "FSC"
+  #' one of "all", "FOB", "FSC"
   #' 
   #' if fad_fsc is False, this argument is skipped
   #' @for_study: skipped for the main study
-  #'             DFAD and FSC (with fad_fsc T) for supplementary
+  #'             FOB (with fad_fsc T) for supplementary
   fishing_mode_for_model = "all",
   
   #' Values of the explanatory variables chosen as reference levels
@@ -152,7 +153,7 @@ arguments <- list(
   ref_var_values = list(fishing_quarter = "1",
                         fishing_year = "2019",
                         size_class = "<75",
-                        fishing_mode = "DFAD"),
+                        fishing_mode = "FOB"),
   
   
   #' @Plots
