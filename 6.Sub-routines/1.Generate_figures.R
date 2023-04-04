@@ -99,8 +99,8 @@ if (length(grp_break) == 1){
 
 if (length(size_classes_fig1) != 0){
   fig1 <- ggplot(toplot, aes(x = as.factor(fishing_year), y = m, shape = group, color = group, group = group))+
-    geom_errorbar(aes(ymin = m - se, ymax = m + se), alpha = 0.6, width = 0.2, size = 0.5, position = position_dodge(0.25))+
-    geom_line(aes(group = facet_grp, linetype = group), alpha = .8)+
+    geom_errorbar(aes(ymin = m - se, ymax = m + se), width = 0.2, size = 0.5, position = position_dodge(0.25))+
+    geom_line(aes(group = facet_grp, linetype = group))+
     geom_point(position = position_dodge(0.25), size = 1.5)+
     # facet_wrap(~facet_grp, strip.position = NULL, scales = "free_x")+
     scale_shape_manual(values = 16:19)+
